@@ -1,0 +1,155 @@
+is_package: true
+container:
+  type: ColumnPanel
+  properties: {col_widths: '{}'}
+components:
+- type: Label
+  properties: {role: title, align: center, tooltip: '', border: '', foreground: '',
+    visible: true, text: 'This Weekend - Admin Panel', font_size: 28, font: '', spacing_above: small,
+    icon_align: left, spacing_below: small, italic: false, background: '', bold: true,
+    underline: false, icon: 'fa:cog'}
+  name: title_label
+  layout_properties: {grid_position: 'GVMBHJ,ZJQEJZ'}
+- type: Label
+  properties: {role: null, align: left, tooltip: '', border: '', foreground: '', visible: true,
+    text: 'Use these tools to set up and manage your This Weekend application.', font_size: null,
+    font: '', spacing_above: small, icon_align: left, spacing_below: small, italic: false,
+    background: '', bold: false, underline: false, icon: ''}
+  name: subtitle_label
+  layout_properties: {grid_position: 'PPBKFH,AKCDTH'}
+- type: ColumnPanel
+  properties: {col_widths: '{"IJIPYH":25,"KPBKMF":50,"VSUYWZ":25}'}
+  name: status_panel
+  layout_properties: {grid_position: 'NQCEJX,JQWYEU'}
+  components:
+  - type: Label
+    properties: {role: null, align: left, tooltip: '', border: '', foreground: '',
+      visible: true, text: 'Last Refresh: Loading...', font_size: null, font: '',
+      spacing_above: small, icon_align: left, spacing_below: small, italic: false,
+      background: '', bold: false, underline: false, icon: 'fa:clock-o'}
+    name: last_refresh_label
+    layout_properties: {grid_position: 'QQLQGR,IJIPYH'}
+  - type: Label
+    properties: {role: null, align: center, tooltip: '', border: '', foreground: '',
+      visible: true, text: 'DB Status: Loading...', font_size: null, font: '', spacing_above: small,
+      icon_align: left, spacing_below: small, italic: false, background: '', bold: false,
+      underline: false, icon: 'fa:database'}
+    name: db_status_label
+    layout_properties: {grid_position: 'QQLQGR,KPBKMF'}
+  - type: Label
+    properties: {role: null, align: right, tooltip: '', border: '', foreground: '',
+      visible: true, text: 'Events: 0', font_size: null, font: '', spacing_above: small,
+      icon_align: left, spacing_below: small, italic: false, background: '', bold: false,
+      underline: false, icon: 'fa:calendar'}
+    name: event_count_label
+    layout_properties: {grid_position: 'QQLQGR,VSUYWZ'}
+  - type: Label
+    properties: {role: null, align: right, tooltip: '', border: '', foreground: '',
+      visible: true, text: 'Weather: 0', font_size: null, font: '', spacing_above: small,
+      icon_align: left, spacing_below: small, italic: false, background: '', bold: false,
+      underline: false, icon: 'fa:sun-o'}
+    name: weather_count_label
+    layout_properties: {grid_position: 'JRHPTB,VSUYWZ'}
+- type: FlowPanel
+  properties: {role: null, spacing: medium, align: left, tooltip: '', border: '',
+    foreground: '', visible: true, spacing_above: small, spacing_below: small, background: ''}
+  name: buttons_panel
+  layout_properties: {grid_position: 'YFDSYW,BDBQZH'}
+  components:
+  - type: Button
+    properties: {role: primary-color, align: center, tooltip: Automatically create
+        all database tables and columns, border: '', enabled: true, foreground: '',
+      visible: true, text: '1. Setup Database', font_size: null, font: '', spacing_above: small,
+      icon_align: left, spacing_below: small, italic: false, background: '', bold: false,
+      underline: false, icon: 'fa:wrench'}
+    name: setup_database_button
+    layout_properties: {}
+    event_bindings: {click: setup_database_button_click}
+  - type: Button
+    properties: {role: filled-button, align: center, tooltip: Test all API key configuration,
+      border: '', enabled: true, foreground: '', visible: true, text: '2. Test API
+        Keys', font_size: null, font: '', spacing_above: small, icon_align: left,
+      spacing_below: small, italic: false, background: '', bold: false, underline: false,
+      icon: 'fa:key'}
+    name: test_api_keys_button
+    layout_properties: {}
+    event_bindings: {click: test_api_keys_button_click}
+  - type: Button
+    properties: {role: filled-button, align: center, tooltip: Run comprehensive system
+        health check, border: '', enabled: true, foreground: '', visible: true, text: '3.
+        Health Check', font_size: null, font: '', spacing_above: small, icon_align: left,
+      spacing_below: small, italic: false, background: '', bold: false, underline: false,
+      icon: 'fa:heartbeat'}
+    name: health_check_button
+    layout_properties: {}
+    event_bindings: {click: health_check_button_click}
+  - type: Button
+    properties: {role: secondary-color, align: center, tooltip: 'Start data refresh:
+        fetch weather, scrape events, AI analysis', border: '', enabled: true, foreground: '',
+      visible: true, text: '4. Refresh Data', font_size: null, font: '', spacing_above: small,
+      icon_align: left, spacing_below: small, italic: false, background: '', bold: false,
+      underline: false, icon: 'fa:refresh'}
+    name: refresh_data_button
+    layout_properties: {}
+    event_bindings: {click: refresh_data_button_click}
+- type: FlowPanel
+  properties: {role: null, spacing: medium, align: left, tooltip: '', border: '',
+    foreground: '', visible: true, spacing_above: small, spacing_below: small, background: ''}
+  name: secondary_buttons_panel
+  layout_properties: {grid_position: 'XZNJPQ,NZQJUJ'}
+  components:
+  - type: Button
+    properties: {role: outlined-button, align: center, tooltip: '', border: '', enabled: true,
+      foreground: '', visible: true, text: Check DB Status, font_size: null, font: '',
+      spacing_above: small, icon_align: left, spacing_below: small, italic: false,
+      background: '', bold: false, underline: false, icon: 'fa:list'}
+    name: check_status_button
+    layout_properties: {}
+    event_bindings: {click: check_status_button_click}
+  - type: Button
+    properties: {role: outlined-button, align: center, tooltip: '', border: '', enabled: true,
+      foreground: '', visible: true, text: View Refresh Log, font_size: null, font: '',
+      spacing_above: small, icon_align: left, spacing_below: small, italic: false,
+      background: '', bold: false, underline: false, icon: 'fa:file-text-o'}
+    name: view_refresh_log_button
+    layout_properties: {}
+    event_bindings: {click: view_refresh_log_button_click}
+  - type: Button
+    properties: {role: outlined-button, align: center, tooltip: '', border: '', enabled: true,
+      foreground: '', visible: true, text: Refresh Status, font_size: null, font: '',
+      spacing_above: small, icon_align: left, spacing_below: small, italic: false,
+      background: '', bold: false, underline: false, icon: 'fa:refresh'}
+    name: refresh_status_button
+    layout_properties: {}
+    event_bindings: {click: refresh_status_button_click}
+  - type: Button
+    properties: {role: outlined-button, align: center, tooltip: 'DANGER: Delete all
+        data from all tables', border: '', enabled: true, foreground: '#ff0000',
+      visible: true, text: Clear All Data, font_size: null, font: '', spacing_above: small,
+      icon_align: left, spacing_below: small, italic: false, background: '', bold: false,
+      underline: false, icon: 'fa:trash'}
+    name: clear_data_button
+    layout_properties: {}
+    event_bindings: {click: clear_data_button_click}
+- type: Label
+  properties: {role: null, align: left, tooltip: '', border: '', foreground: '', visible: true,
+    text: Output, font_size: null, font: '', spacing_above: small, icon_align: left,
+    spacing_below: small, italic: false, background: '', bold: true, underline: false,
+    icon: ''}
+  name: output_label
+  layout_properties: {grid_position: 'JLXFOD,TQYZUI'}
+- type: TextArea
+  properties: {role: null, align: full, height: 400, tooltip: '', placeholder: 'Status
+      output will appear here...', border: '', enabled: true, foreground: '', visible: true,
+    text: '', font_size: 12, auto_expand: false, font: monospace, spacing_above: small,
+    spacing_below: small, italic: false, background: '', bold: false, underline: false}
+  name: status_output
+  layout_properties: {grid_position: 'QQQNEA,NSBMIK'}
+- type: Label
+  properties: {role: null, align: left, tooltip: '', border: '', foreground: '#999999',
+    visible: true, text: 'For detailed documentation, see ADMIN_TOOLS_GUIDE.md',
+    font_size: null, font: '', spacing_above: small, icon_align: left, spacing_below: small,
+    italic: true, background: '', bold: false, underline: false, icon: 'fa:info-circle'}
+  name: footer_label
+  layout_properties: {grid_position: 'NHDVFZ,FNLJFI'}
+
