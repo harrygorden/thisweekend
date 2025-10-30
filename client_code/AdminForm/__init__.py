@@ -245,6 +245,167 @@ class AdminForm(AdminFormTemplate):
             alert(f"Error: {str(e)}", title="Error")
     
     
+    def test_openweather_button_click(self, **event_args):
+        """Test OpenWeather API"""
+        self.status_output.text = "🌤️ Testing OpenWeather API...\n\n"
+        
+        try:
+            import server_code.weather_service as weather
+            
+            self.status_output.text += "Fetching Memphis weather forecast...\n"
+            
+            # Fetch weather
+            weather_data = weather.fetch_weekend_weather()
+            
+            # Build output
+            output = "="*50 + "\n"
+            output += "OPENWEATHER API TEST\n"
+            output += "="*50 + "\n\n"
+            output += f"✅ SUCCESS! Fetched weather for {len(weather_data)} days\n\n"
+            
+            for day_name, forecast in weather_data.items():
+                output += f"{forecast['day_name']} ({forecast['date']}):\n"
+                output += f"  High: {forecast['temp_high']}°F, Low: {forecast['temp_low']}°F\n"
+                output += f"  Conditions: {forecast['conditions']}\n"
+                output += f"  Rain chance: {forecast['precipitation_chance']}%\n"
+                output += f"  Wind: {forecast['wind_speed']} mph\n"
+                output += f"  Hourly forecasts: {len(forecast['hourly_data'])} hours\n\n"
+            
+            self.status_output.text = output
+            alert("✅ OpenWeather API is working!", title="API Test")
+            
+        except Exception as e:
+            output = "="*50 + "\n"
+            output += "OPENWEATHER API TEST\n"
+            output += "="*50 + "\n\n"
+            output += f"❌ FAILED!\n\n"
+            output += f"Error: {str(e)}\n\n"
+            output += "Possible causes:\n"
+            output += "  • Invalid API key\n"
+            output += "  • API key doesn't have One Call API 3.0 access\n"
+            output += "  • Network connection issue\n"
+            output += "  • Rate limit exceeded\n"
+            
+            self.status_output.text = output
+            alert(f"❌ OpenWeather API failed:\n\n{str(e)}", title="API Test Failed")
+    
+    
+    def test_firecrawl_button_click(self, **event_args):
+        """Test Firecrawl API connectivity"""
+        self.status_output.text = "🔍 Testing Firecrawl API...\n\n"
+        self.status_output.text += "Running 3 tests (this may take 30-60 seconds)...\n\n"
+        
+        try:
+            result = anvil.server.call('test_firecrawl_connection')
+            
+            # Build output
+            output = "="*50 + "\n"
+            output += "FIRECRAWL API CONNECTION TEST\n"
+            output += "="*50 + "\n\n"
+            
+            output += f"API Key Configured: {result['api_key_configured']}\n"
+            if result.get('api_key_preview'):
+                output += f"API Key: {result['api_key_preview']}\n\n"
+            
+            output += "TEST RESULTS:\n"
+            output += "-"*50 + "\n\n"
+            
+            for test_name, test_result in result['tests'].items():
+                status = "✅ PASS" if test_result['success'] else "❌ FAIL"
+                output += f"{test_name.upper()}:\n"
+                output += f"  Status: {status}\n"
+                output += f"  URL: {test_result['url']}\n"
+                output += f"  Stealth: {test_result['stealth']}\n"
+                
+                if test_result['success']:
+                    output += f"  ✅ Markdown size: {test_result.get('markdown_size', 0)} chars\n"
+                    if test_result.get('metadata'):
+                        output += f"  ✅ Page title: {test_result['metadata'].get('title', 'Unknown')}\n"
+                else:
+                    output += f"  ❌ Error: {test_result.get('error', 'Unknown')}\n"
+                    if test_result.get('error_code'):
+                        output += f"  ❌ Error code: {test_result['error_code']}\n"
+                
+                output += "\n"
+            
+            # Summary
+            success_count = sum(1 for t in result['tests'].values() if t['success'])
+            total_count = len(result['tests'])
+            
+            output += "="*50 + "\n"
+            output += f"SUMMARY: {success_count}/{total_count} tests passed\n"
+            output += "="*50 + "\n"
+            
+            self.status_output.text = output
+            
+            if success_count == total_count:
+                alert("✅ All Firecrawl tests passed!", title="API Test")
+            elif success_count > 0:
+                alert(f"⚠️ Partial success: {success_count}/{total_count} tests passed\n\nCheck output for details.", title="API Test")
+            else:
+                alert("❌ All Firecrawl tests failed\n\nCheck output for error details.", title="API Test Failed")
+            
+        except Exception as e:
+            self.status_output.text = f"❌ Test failed: {str(e)}\n\n{traceback.format_exc()}"
+            alert(f"❌ Test failed:\n{str(e)}", title="Error")
+    
+    
+    def test_openai_button_click(self, **event_args):
+        """Test OpenAI API"""
+        self.status_output.text = "🤖 Testing OpenAI API...\n\n"
+        
+        try:
+            import server_code.ai_service as ai
+            
+            self.status_output.text += "Sending test event to ChatGPT for analysis...\n\n"
+            
+            # Create a test event
+            test_event = {
+                'title': 'Live Jazz Concert at Overton Park',
+                'description': 'Outdoor jazz concert featuring local Memphis musicians. Bring blankets and chairs for lawn seating. Food trucks and beverages available.',
+                'location': 'Overton Park Shell',
+                'cost_raw': '$15 advance tickets, $20 at door'
+            }
+            
+            # Analyze with AI
+            analysis = ai.analyze_event(test_event)
+            
+            # Build output
+            output = "="*50 + "\n"
+            output += "OPENAI API TEST\n"
+            output += "="*50 + "\n\n"
+            output += "✅ SUCCESS! ChatGPT API is working\n\n"
+            output += "Test Event:\n"
+            output += f"  Title: {test_event['title']}\n\n"
+            output += "AI Analysis Results:\n"
+            output += f"  Indoor: {analysis.get('is_indoor', 'unknown')}\n"
+            output += f"  Outdoor: {analysis.get('is_outdoor', 'unknown')}\n"
+            output += f"  Audience: {analysis.get('audience_type', 'unknown')}\n"
+            output += f"  Cost level: {analysis.get('cost_level', 'unknown')}\n"
+            output += f"  Categories: {', '.join(analysis.get('categories', []))}\n\n"
+            output += "="*50 + "\n"
+            output += "OpenAI API is configured correctly!\n"
+            output += "="*50 + "\n"
+            
+            self.status_output.text = output
+            alert("✅ OpenAI API is working!\n\nChatGPT successfully analyzed the test event.", title="API Test")
+            
+        except Exception as e:
+            output = "="*50 + "\n"
+            output += "OPENAI API TEST\n"
+            output += "="*50 + "\n\n"
+            output += f"❌ FAILED!\n\n"
+            output += f"Error: {str(e)}\n\n"
+            output += "Possible causes:\n"
+            output += "  • Invalid API key\n"
+            output += "  • Insufficient credits/quota\n"
+            output += "  • Network connection issue\n"
+            output += "  • Rate limit exceeded\n"
+            
+            self.status_output.text = output
+            alert(f"❌ OpenAI API failed:\n\n{str(e)}", title="API Test Failed")
+    
+    
     def test_api_keys_button_click(self, **event_args):
         """Test API key configuration"""
         self.status_output.text = "⏳ Testing API keys...\n"

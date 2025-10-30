@@ -53,6 +53,30 @@ components:
   name: buttons_panel
   properties: {align: left, background: '', border: '', foreground: '', role: null, spacing: medium, spacing_above: small, spacing_below: small, tooltip: '', visible: true}
   type: FlowPanel
+- layout_properties: {grid_position: 'APITEST,HEADER'}
+  name: api_testing_label
+  properties: {align: left, background: '', bold: true, border: '', font: '', font_size: null, foreground: '', icon: 'fa:plug', icon_align: left, italic: false, role: null, spacing_above: small, spacing_below: small, text: API Testing, tooltip: '', underline: false, visible: true}
+  type: Label
+- components:
+  - event_bindings: {click: test_openweather_button_click}
+    layout_properties: {}
+    name: test_openweather_button
+    properties: {align: center, background: '', bold: false, border: '', enabled: true, font: '', font_size: null, foreground: '', icon: 'fa:cloud', icon_align: left, italic: false, role: outlined-button, spacing_above: small, spacing_below: small, text: Test Weather API, tooltip: Test OpenWeather API connection, underline: false, visible: true}
+    type: Button
+  - event_bindings: {click: test_firecrawl_button_click}
+    layout_properties: {}
+    name: test_firecrawl_button
+    properties: {align: center, background: '', bold: false, border: '', enabled: true, font: '', font_size: null, foreground: '', icon: 'fa:bug', icon_align: left, italic: false, role: outlined-button, spacing_above: small, spacing_below: small, text: Test Firecrawl API, tooltip: Test Firecrawl API with multiple scenarios, underline: false, visible: true}
+    type: Button
+  - event_bindings: {click: test_openai_button_click}
+    layout_properties: {}
+    name: test_openai_button
+    properties: {align: center, background: '', bold: false, border: '', enabled: true, font: '', font_size: null, foreground: '', icon: 'fa:brain', icon_align: left, italic: false, role: outlined-button, spacing_above: small, spacing_below: small, text: Test OpenAI API, tooltip: Test OpenAI ChatGPT API, underline: false, visible: true}
+    type: Button
+  layout_properties: {grid_position: 'APITEST,BUTTONS'}
+  name: api_test_buttons_panel
+  properties: {align: left, background: '', border: '', foreground: '', role: null, spacing: medium, spacing_above: small, spacing_below: small, tooltip: '', visible: true}
+  type: FlowPanel
 - components:
   - event_bindings: {click: check_status_button_click}
     layout_properties: {}
