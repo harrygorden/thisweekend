@@ -4,6 +4,8 @@ Coordinates the complete data refresh workflow.
 """
 
 import anvil.server
+import anvil.tables as tables
+import anvil.tables.query as q
 from anvil.tables import app_tables
 from datetime import datetime, timedelta
 
@@ -35,9 +37,11 @@ def scheduled_refresh_all_data():
     log_id = api_helpers.generate_unique_id("log")
     start_time = datetime.now()
     
-    print("=" * 60)
+    print("\n" + "=" * 60)
+    print("🚀 BACKGROUND TASK STARTED")
     print(f"Starting scheduled data refresh at {start_time}")
-    print("=" * 60)
+    print(f"Log ID: {log_id}")
+    print("=" * 60 + "\n")
     
     # Create initial log entry
     log_entry = app_tables.scrape_log.add_row(
@@ -52,16 +56,19 @@ def scheduled_refresh_all_data():
     
     try:
         # Step 1: Clean up old data
-        print("\n[Step 1/9] Cleaning up old data...")
+        print("[Step 1/10] Cleaning up old data...")
         cleanup_old_data()
+        print("  ✓ Cleanup complete")
         
         # Step 2: Fetch weather forecast
-        print("\n[Step 2/9] Fetching weekend weather...")
+        print("[Step 2/10] Fetching weekend weather...")
         weather_data = weather_service.fetch_weekend_weather()
+        print(f"  ✓ Fetched weather for {len(weather_data)} days")
         
         # Step 3: Save weather to database
-        print("\n[Step 3/9] Saving weather data...")
+        print("[Step 3/10] Saving weather data...")
         weather_service.save_weather_to_db(weather_data)
+        print("  ✓ Weather data saved")
         
         # Step 4: Scrape weekend events
         print("\n[Step 4/9] Scraping weekend events...")
@@ -146,7 +153,9 @@ def trigger_data_refresh():
         Task object for monitoring progress
     """
     print("Manual data refresh triggered by client")
+    print("Launching background task: scheduled_refresh_all_data")
     task = anvil.server.launch_background_task('scheduled_refresh_all_data')
+    print(f"Background task launched: {task}")
     return task
 
 
@@ -185,7 +194,7 @@ def get_refresh_status():
     
     # Get most recent log entry
     recent_logs = list(app_tables.scrape_log.search(
-        tables.order_by("run_date", ascending=False)
+        q.order_by("run_date", ascending=False)
     ))[:5]  # Get last 5 runs
     
     if not recent_logs:
