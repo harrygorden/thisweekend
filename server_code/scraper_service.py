@@ -95,15 +95,54 @@ def scrape_weekend_events():
         # Capture the error response body for HTTP errors
         error_details = "No details available"
         try:
-            if hasattr(e, 'content'):
-                error_body = e.content.get_bytes().decode('utf-8')
-                error_json = json.loads(error_body)
-                error_details = json.dumps(error_json, indent=2)
+            # Try different ways to get error content from Anvil HttpError
+            if hasattr(e, 'content') and e.content:
+                # e.content might be a StreamingMedia object
+                if hasattr(e.content, 'get_bytes'):
+                    error_body = e.content.get_bytes().decode('utf-8')
+                elif isinstance(e.content, bytes):
+                    error_body = e.content.decode('utf-8')
+                elif isinstance(e.content, str):
+                    error_body = e.content
+                else:
+                    error_body = str(e.content)
+                
+                # Try to parse as JSON
+                try:
+                    error_json = json.loads(error_body)
+                    error_details = json.dumps(error_json, indent=2)
+                except:
+                    error_details = error_body
+                
                 print(f"  Firecrawl error response: {error_details}")
-        except:
-            pass
+            
+            # Also check if error message is in the exception itself
+            if hasattr(e, 'args') and e.args:
+                print(f"  Exception args: {e.args}")
+                
+        except Exception as err:
+            print(f"  Could not extract error details: {err}")
         
         print(f"HTTP Error {e.status}: {error_details}")
+        
+        # If we couldn't get details, suggest alternatives
+        if error_details == "No details available":
+            print("\n  Possible causes for HTTP 400:")
+            print("    1. API key doesn't have v2 access (check firecrawl.dev dashboard)")
+            print("    2. Free tier limitation (may need paid plan)")
+            print("    3. URL requires stealth mode or is blocked")
+            print("    4. Invalid request format")
+            print("\n  Switching to direct scraper as fallback...")
+            
+            # Try direct scraper as fallback
+            try:
+                from . import scraper_direct
+                print("  Attempting direct scraping without Firecrawl API...")
+                return scraper_direct.scrape_weekend_events_direct()
+            except Exception as direct_error:
+                print(f"  Direct scraping also failed: {direct_error}")
+                raise Exception(f"Firecrawl API error {e.status} AND direct scraping failed. Original error: {error_details}")
+        
         raise Exception(f"Firecrawl API error {e.status}: {error_details}")
         
     except Exception as e:
