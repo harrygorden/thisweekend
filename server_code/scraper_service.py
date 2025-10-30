@@ -75,11 +75,14 @@ def scrape_with_firecrawl():
         "Content-Type": "application/json"
     }
     
-    # Updated payload format for Firecrawl v2
-    # Reference: https://context7.com/firecrawl/firecrawl/llms.txt
+    # Updated payload format for Firecrawl v2 with Stealth Mode
+    # Reference: https://docs.firecrawl.dev/features/scrape
+    # Stealth mode bypasses Cloudflare protection
     payload = {
         "url": config.TARGET_WEBSITE_URL,
-        "formats": ["markdown", "html"]  # Request markdown and html
+        "formats": ["markdown", "html"],
+        "stealth": True,  # Enable stealth mode for Cloudflare bypass
+        "timeout": 60000  # 60 second timeout for Cloudflare challenge
     }
     
     try:
