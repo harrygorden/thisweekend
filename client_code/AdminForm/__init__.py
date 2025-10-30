@@ -250,12 +250,12 @@ class AdminForm(AdminFormTemplate):
         self.status_output.text = "🌤️ Testing OpenWeather API...\n\n"
         
         try:
-            import server_code.weather_service as weather
-            
             self.status_output.text += "Fetching Memphis weather forecast...\n"
             
-            # Fetch weather
-            weather_data = weather.fetch_weekend_weather()
+            # Call server-side test function
+            result = anvil.server.call('test_openweather_api')
+            
+            weather_data = result.get('weather_data', {})
             
             # Build output
             output = "="*50 + "\n"
@@ -355,20 +355,13 @@ class AdminForm(AdminFormTemplate):
         self.status_output.text = "🤖 Testing OpenAI API...\n\n"
         
         try:
-            import server_code.ai_service as ai
-            
             self.status_output.text += "Sending test event to ChatGPT for analysis...\n\n"
             
-            # Create a test event
-            test_event = {
-                'title': 'Live Jazz Concert at Overton Park',
-                'description': 'Outdoor jazz concert featuring local Memphis musicians. Bring blankets and chairs for lawn seating. Food trucks and beverages available.',
-                'location': 'Overton Park Shell',
-                'cost_raw': '$15 advance tickets, $20 at door'
-            }
+            # Call server-side test function
+            result = anvil.server.call('test_openai_api')
             
-            # Analyze with AI
-            analysis = ai.analyze_event(test_event)
+            test_event = result.get('test_event', {})
+            analysis = result.get('analysis', {})
             
             # Build output
             output = "="*50 + "\n"

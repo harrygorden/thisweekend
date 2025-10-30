@@ -74,7 +74,7 @@ def test_firecrawl_connection():
 
 def test_firecrawl_url(api_key, url, use_stealth=False):
     """
-    Test scraping a specific URL with Firecrawl.
+    Test scraping a specific URL with Firecrawl v2.
     
     Args:
         api_key: Firecrawl API key
@@ -90,8 +90,8 @@ def test_firecrawl_url(api_key, url, use_stealth=False):
         'success': False
     }
     
-    # Build request
-    api_url = "https://api.firecrawl.dev/v1/scrape"
+    # Build request - using v2 endpoint
+    api_url = "https://api.firecrawl.dev/v2/scrape"
     
     headers = {
         "Authorization": f"Bearer {api_key}",
