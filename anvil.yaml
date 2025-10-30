@@ -58,7 +58,40 @@ db_schema:
     title: events
   hourly_weather:
     client: none
-    columns: []
+    columns:
+    - admin_ui: {width: 200}
+      name: timestamp
+      type: datetime
+    - admin_ui: {width: 200}
+      name: date
+      type: date
+    - admin_ui: {width: 200}
+      name: temp
+      type: number
+    - admin_ui: {width: 200}
+      name: precipitation_chance
+      type: number
+    - admin_ui: {width: 200}
+      name: wind_speed
+      type: number
+    - admin_ui: {width: 200}
+      name: humidity
+      type: number
+    - admin_ui: {width: 200}
+      name: conditions
+      type: string
+    - admin_ui: {width: 200}
+      name: feels_like
+      type: number
+    - admin_ui: {width: 200}
+      name: uvi
+      type: number
+    - admin_ui: {width: 200}
+      name: hour_time
+      type: string
+    - admin_ui: {width: 200}
+      name: fetched_at
+      type: datetime
     server: full
     title: hourly_weather
   scrape_log:
