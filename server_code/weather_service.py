@@ -71,6 +71,7 @@ def fetch_weekend_weather():
 def extract_weekend_forecasts(weather_data):
     """
     Extract Friday, Saturday, Sunday forecasts from API response.
+    Includes all 48 hours of hourly forecasts available.
     
     Args:
         weather_data: Raw API response
@@ -82,7 +83,9 @@ def extract_weekend_forecasts(weather_data):
     weekend_forecasts = {}
     
     daily_forecasts = weather_data.get("daily", [])
-    hourly_forecasts = weather_data.get("hourly", [])
+    hourly_forecasts = weather_data.get("hourly", [])  # 48 hours available
+    
+    print(f"  Processing {len(daily_forecasts)} daily forecasts and {len(hourly_forecasts)} hourly forecasts")
     
     for day_name, target_date in weekend_dates.items():
         # Find matching daily forecast
@@ -105,7 +108,9 @@ def extract_weekend_forecasts(weather_data):
                         "feels_like": round(hour_forecast.get("feels_like", hour_forecast["temp"])),
                         "precipitation_chance": round(hour_forecast.get("pop", 0) * 100),
                         "conditions": hour_forecast["weather"][0]["description"],
-                        "wind_speed": round(hour_forecast.get("wind_speed", 0))
+                        "wind_speed": round(hour_forecast.get("wind_speed", 0)),
+                        "humidity": hour_forecast.get("humidity", 0),
+                        "uvi": round(hour_forecast.get("uvi", 0), 1)
                     })
             
             weekend_forecasts[day_name] = {
@@ -126,6 +131,7 @@ def extract_weekend_forecasts(weather_data):
 def save_weather_to_db(weather_data):
     """
     Save weather forecasts to the weather_forecast Data Table.
+    Also saves 48-hour hourly forecasts to hourly_weather table.
     Clears old data first.
     
     Args:
@@ -138,7 +144,16 @@ def save_weather_to_db(weather_data):
         for row in app_tables.weather_forecast.search():
             row.delete()
         
-        # Insert new forecasts
+        # Clear old hourly data if table exists
+        try:
+            for row in app_tables.hourly_weather.search():
+                row.delete()
+        except AttributeError:
+            # hourly_weather table doesn't exist yet
+            print("  Note: hourly_weather table not found (will be created if needed)")
+            pass
+        
+        # Insert new daily forecasts
         for day_name, forecast in weather_data.items():
             app_tables.weather_forecast.add_row(
                 forecast_date=forecast["date"],
@@ -151,6 +166,35 @@ def save_weather_to_db(weather_data):
                 hourly_data=forecast["hourly_data"],  # Store as SimpleObject
                 fetched_at=datetime.now()
             )
+            
+            # Save detailed hourly data to separate table
+            try:
+                for hour_data in forecast["hourly_data"]:
+                    # Parse the time to create a full datetime
+                    hour_str = hour_data["time"]
+                    try:
+                        hour_time = datetime.strptime(hour_str, "%I:%M %p").time()
+                        full_datetime = datetime.combine(forecast["date"], hour_time)
+                    except:
+                        # If time parsing fails, use a default
+                        full_datetime = datetime.combine(forecast["date"], datetime.min.time())
+                    
+                    app_tables.hourly_weather.add_row(
+                        timestamp=full_datetime,
+                        hour_time=hour_data["time"],
+                        date=forecast["date"],
+                        temp=hour_data["temp"],
+                        feels_like=hour_data["feels_like"],
+                        conditions=hour_data["conditions"],
+                        precipitation_chance=hour_data["precipitation_chance"],
+                        wind_speed=hour_data["wind_speed"],
+                        humidity=hour_data.get("humidity", 0),
+                        uvi=hour_data.get("uvi", 0),
+                        fetched_at=datetime.now()
+                    )
+            except AttributeError:
+                # hourly_weather table doesn't exist, skip saving hourly data
+                pass
         
         print(f"Saved {len(weather_data)} weather forecasts to database")
         
@@ -162,6 +206,7 @@ def save_weather_to_db(weather_data):
 def get_weather_for_datetime(event_date, event_time=None):
     """
     Get weather forecast for a specific date and time.
+    Uses hourly_weather table for precise forecasts when available.
     
     Args:
         event_date: datetime.date object
@@ -185,13 +230,37 @@ def get_weather_for_datetime(event_date, event_time=None):
         "wind_speed": forecast["wind_speed"]
     }
     
-    # If specific time is provided, try to get hourly data
-    if event_time and forecast["hourly_data"]:
-        # Find closest hourly forecast
-        for hour_data in forecast["hourly_data"]:
-            if hour_data["time"] == event_time:
-                weather_info["hourly"] = hour_data
-                break
+    # If specific time is provided, try to get precise hourly data
+    if event_time and event_time != "TBD":
+        # First try the hourly_weather table (more accurate)
+        try:
+            hourly_row = app_tables.hourly_weather.get(
+                date=event_date,
+                hour_time=event_time
+            )
+            if hourly_row:
+                weather_info["hourly"] = {
+                    "time": hourly_row["hour_time"],
+                    "temp": hourly_row["temp"],
+                    "feels_like": hourly_row["feels_like"],
+                    "conditions": hourly_row["conditions"],
+                    "precipitation_chance": hourly_row["precipitation_chance"],
+                    "wind_speed": hourly_row["wind_speed"],
+                    "humidity": hourly_row["humidity"],
+                    "uvi": hourly_row["uvi"]
+                }
+                return weather_info
+        except (AttributeError, KeyError):
+            # hourly_weather table doesn't exist or no match found
+            pass
+        
+        # Fallback: Use hourly_data from forecast
+        if forecast["hourly_data"]:
+            # Find closest hourly forecast
+            for hour_data in forecast["hourly_data"]:
+                if hour_data["time"] == event_time:
+                    weather_info["hourly"] = hour_data
+                    break
     
     return weather_info
 

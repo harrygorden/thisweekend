@@ -28,7 +28,7 @@ def scrape_weekend_events():
     # Get API key
     api_key = api_helpers.get_api_key("FIRECRAWL_API_KEY")
     
-    # Firecrawl API endpoint
+    # Firecrawl API v1 endpoint
     url = "https://api.firecrawl.dev/v1/scrape"
     
     headers = {
@@ -36,9 +36,12 @@ def scrape_weekend_events():
         "Content-Type": "application/json"
     }
     
+    # Updated payload format for Firecrawl v1
     payload = {
         "url": config.TARGET_WEBSITE_URL,
-        "formats": config.FIRECRAWL_FORMATS
+        "formats": ["markdown"],  # Explicit list format
+        "onlyMainContent": True,  # Get only main content
+        "waitFor": 0  # No wait time needed
     }
     
     try:
@@ -57,17 +60,26 @@ def scrape_weekend_events():
         # Parse response
         result = json.loads(response_text)
         
-        # Extract markdown content
-        markdown_content = result.get("data", {}).get("markdown", "")
+        # Extract markdown content (updated path for v1 response)
+        if "data" in result:
+            markdown_content = result["data"].get("markdown", "")
+        elif "markdown" in result:
+            markdown_content = result.get("markdown", "")
+        else:
+            # Fallback: try to get any text content
+            markdown_content = result.get("content", "")
         
         if not markdown_content:
-            raise Exception("No markdown content returned from Firecrawl")
+            raise Exception(f"No markdown content returned from Firecrawl. Response: {response_text[:500]}")
         
         print(f"Successfully scraped {len(markdown_content)} characters of content")
         return markdown_content
         
     except Exception as e:
         print(f"Error scraping website: {str(e)}")
+        # Log the full error for debugging
+        import traceback
+        print(f"Full error: {traceback.format_exc()}")
         raise
 
 

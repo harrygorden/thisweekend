@@ -155,11 +155,12 @@ class AdminForm(AdminFormTemplate):
         """Trigger data refresh"""
         confirm_msg = (
             "This will:\n"
-            "1. Fetch Memphis weather\n"
-            "2. Scrape events from website\n"
+            "1. Fetch Memphis weather ✅\n"
+            "2. Scrape events from website (may fail)\n"
             "3. Analyze with AI\n"
             "4. Calculate recommendations\n\n"
             "This may take 2-5 minutes.\n\n"
+            "Note: If scraping fails, use 'Load Test Events' instead.\n\n"
             "Continue?"
         )
         
@@ -177,7 +178,8 @@ class AdminForm(AdminFormTemplate):
                 "Background task is running...\n"
                 "Check server logs for detailed progress.\n\n"
                 "This will take 2-5 minutes.\n"
-                "You can close this form and come back later.\n"
+                "You can close this form and come back later.\n\n"
+                "If it fails at scraping, try 'Load Test Events' instead.\n"
             )
             
             alert("✅ Data refresh started!\n\nCheck server logs for progress.\nThis will take 2-5 minutes.", title="Refresh Started")
@@ -192,6 +194,55 @@ class AdminForm(AdminFormTemplate):
             
         finally:
             self.refresh_data_button.enabled = True
+    
+    
+    def load_test_events_button_click(self, **event_args):
+        """Load test events for development/testing"""
+        confirm_msg = (
+            "This will create 14 realistic sample events for testing.\n\n"
+            "Perfect for testing the UI while debugging Firecrawl!\n\n"
+            "Continue?"
+        )
+        
+        if not confirm(confirm_msg):
+            return
+        
+        self.status_output.text = "⏳ Creating test events...\n"
+        
+        try:
+            count = anvil.server.call('create_test_events')
+            
+            self.status_output.text = (
+                f"✅ Created {count} test events!\n\n"
+                "Events have been:\n"
+                "  • Added to database\n"
+                "  • Matched with weather\n"
+                "  • Scored and ready to display\n\n"
+                "You can now test the UI with real-looking data!\n"
+            )
+            
+            alert(f"✅ Created {count} test events!\n\nYou can now test the UI.", title="Test Events Loaded")
+            
+            # Refresh status
+            self.refresh_status()
+            
+        except Exception as e:
+            error_msg = f"❌ ERROR: {str(e)}\n"
+            self.status_output.text = error_msg
+            alert(f"Failed to create test events:\n{str(e)}", title="Error")
+    
+    
+    def clear_test_events_button_click(self, **event_args):
+        """Clear test events only"""
+        if not confirm("Clear all test events?"):
+            return
+        
+        try:
+            count = anvil.server.call('clear_test_events')
+            alert(f"✅ Deleted {count} test events", title="Test Events Cleared")
+            self.refresh_status()
+        except Exception as e:
+            alert(f"Error: {str(e)}", title="Error")
     
     
     def test_api_keys_button_click(self, **event_args):

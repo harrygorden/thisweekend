@@ -50,6 +50,19 @@ SCHEMA_DEFINITIONS = {
         'hourly_data': ('simpleobject', [{'time': '12:00 PM', 'temp': 70}]),
         'fetched_at': ('datetime', datetime.now())
     },
+    'hourly_weather': {
+        'timestamp': ('datetime', datetime.now()),
+        'hour_time': ('text', '3:00 PM'),
+        'date': ('date', date.today()),
+        'temp': ('number', 72),
+        'feels_like': ('number', 70),
+        'conditions': ('text', 'Partly Cloudy'),
+        'precipitation_chance': ('number', 20),
+        'wind_speed': ('number', 10),
+        'humidity': ('number', 60),
+        'uvi': ('number', 5),
+        'fetched_at': ('datetime', datetime.now())
+    },
     'scrape_log': {
         'log_id': ('text', 'log_sample_123'),
         'run_date': ('datetime', datetime.now()),
