@@ -1,4 +1,119 @@
 allow_embedding: false
+db_schema:
+  events:
+    client: none
+    columns:
+    - admin_ui: {width: 200}
+      name: description
+      type: string
+    - admin_ui: {width: 200}
+      name: recommendation_score
+      type: number
+    - admin_ui: {width: 200}
+      name: date
+      type: date
+    - admin_ui: {width: 200}
+      name: start_time
+      type: string
+    - admin_ui: {width: 200}
+      name: audience_type
+      type: string
+    - admin_ui: {width: 200}
+      name: scraped_at
+      type: datetime
+    - admin_ui: {width: 200}
+      name: event_id
+      type: string
+    - admin_ui: {width: 200}
+      name: title
+      type: string
+    - admin_ui: {width: 200}
+      name: cost_level
+      type: string
+    - admin_ui: {width: 200}
+      name: weather_score
+      type: number
+    - admin_ui: {width: 200}
+      name: end_time
+      type: string
+    - admin_ui: {width: 200}
+      name: categories
+      type: simpleObject
+    - admin_ui: {width: 200}
+      name: analyzed_at
+      type: datetime
+    - admin_ui: {width: 200}
+      name: is_outdoor
+      type: bool
+    - admin_ui: {width: 200}
+      name: is_indoor
+      type: bool
+    - admin_ui: {width: 200}
+      name: location
+      type: string
+    - admin_ui: {width: 200}
+      name: cost_raw
+      type: string
+    server: full
+    title: events
+  scrape_log:
+    client: none
+    columns:
+    - admin_ui: {width: 200}
+      name: log_id
+      type: string
+    - admin_ui: {width: 200}
+      name: run_date
+      type: datetime
+    - admin_ui: {width: 200}
+      name: status
+      type: string
+    - admin_ui: {width: 200}
+      name: events_found
+      type: number
+    - admin_ui: {width: 200}
+      name: events_analyzed
+      type: number
+    - admin_ui: {width: 200}
+      name: error_message
+      type: string
+    - admin_ui: {width: 200}
+      name: duration_seconds
+      type: number
+    server: full
+    title: scrape_log
+  weather_forecast:
+    client: none
+    columns:
+    - admin_ui: {width: 200}
+      name: day_name
+      type: string
+    - admin_ui: {width: 200}
+      name: temp_low
+      type: number
+    - admin_ui: {width: 200}
+      name: temp_high
+      type: number
+    - admin_ui: {width: 200}
+      name: precipitation_chance
+      type: number
+    - admin_ui: {width: 200}
+      name: wind_speed
+      type: number
+    - admin_ui: {width: 200}
+      name: forecast_date
+      type: date
+    - admin_ui: {width: 200}
+      name: conditions
+      type: string
+    - admin_ui: {width: 200}
+      name: hourly_data
+      type: simpleObject
+    - admin_ui: {width: 200}
+      name: fetched_at
+      type: datetime
+    server: full
+    title: weather_forecast
 dependencies: []
 metadata: {title: This Weekend}
 name: ThisWeekend
@@ -9,8 +124,23 @@ runtime_options:
   server_spec: {base: python310-standard}
   server_version: python3-sandbox
   version: 2
+scheduled_tasks: []
+secrets:
+  FIRECRAWL_API_KEY:
+    type: secret
+    value: {PLE3BZEKOON63IQ4: 6xz0NQaQ+vWo8BqRqJmT4pVOQI1JI7B2ztF6rf2440SkqHqNFTNDxETvGSriwD4kRogDF4hjA2tbzUaDa3hL9oaJQipAtshSvwg+wyJ8coXZs4F52aT1Kg3TvwKw/hrH9WxKlVpSvx867mg7MWXzE0QkSOLpzED+o5Klx22/7zCaXw==}
+  OPENAI_API_KEY:
+    type: secret
+    value: {PLE3BZEKOON63IQ4: ZkSL/fYJFq97Bw8s0U2EsNlelDnGtHpbEE2gR9kF7TK232IKx/Y2+ehkh1ZoE93Cl1Lct+HDp/bvLd/hRJtRiNn3FIG+zlIv3KFOQ4Do4+DPZNjnywrCXkvRfQ61c/zMfME6GI2Prp3QVCYz6ptLh/m738cx+ZeArBQJ+uGceqdSbK90rOiriJaNbdEwqz4ABkSF4VswZN75AvMVLpeH5tFQ+z8swYWo7UwrePYwfapRPyQdRWXAh2P7Rq8SdWtm+3U9e4jvnjk/EFHtOyt7pf1NOMTTCUYlqda36BEKE+hx/hdjUMaqgcUDo2DvATSSrALnHUSMUT6gw/sbm+p6hOPRPw==}
+  OPENWEATHER_API_KEY:
+    type: secret
+    value: {PLE3BZEKOON63IQ4: uIsLKtETce78lRIlwOOJGBE0iwkMUuqWkHaPoXaN/Pp/M6T4FEZkTcIo966jBIwQ0em513UsfDpedwdgt6AUHXu+hLMB5+nRqF8L1Y//WdzNiWbWir1UoTunR5KJqiQP54+jcDyO2vDcIVE5fEWqWl6VbEKbVAl3AWsam8Ncqg==}
 services:
 - client_config: {}
   server_config: {auto_create_missing_columns: true}
   source: /runtime/services/tables.yml
+- client_config: {}
+  server_config: {}
+  source: /runtime/services/anvil/secrets.yml
 startup_form: Form1
+uplink_visible: true
