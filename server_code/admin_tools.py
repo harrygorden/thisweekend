@@ -1,0 +1,327 @@
+"""
+Admin Tools for This Weekend App
+
+This module provides administrative functions for managing the application,
+including database setup, testing, and maintenance tasks.
+
+These functions can be called from a test form or admin panel.
+"""
+
+import anvil.server
+from datetime import datetime
+
+# Import our setup module
+from . import setup_schema
+
+
+@anvil.server.callable
+def run_database_setup():
+    """
+    Run the complete database setup process.
+    This will verify all tables exist and create any missing columns.
+    
+    Returns:
+        dict: Setup results with detailed status
+        
+    Example usage from client:
+        result = anvil.server.call('run_database_setup')
+        print(result['summary'])
+    """
+    return setup_schema.setup_and_verify_all_tables()
+
+
+@anvil.server.callable
+def check_database_status():
+    """
+    Check database status without making any changes.
+    
+    Returns:
+        dict: Status report for all tables
+        
+    Example usage from client:
+        status = anvil.server.call('check_database_status')
+        for table_name, info in status['tables'].items():
+            print(f"{table_name}: {info['existing_columns']} columns")
+    """
+    return setup_schema.verify_database_schema()
+
+
+@anvil.server.callable
+def get_system_info():
+    """
+    Get general system information and status.
+    
+    Returns:
+        dict: System information
+    """
+    from . import background_tasks
+    
+    info = {
+        'timestamp': datetime.now(),
+        'database_status': {},
+        'last_refresh': None,
+        'event_count': 0,
+        'weather_forecast_count': 0
+    }
+    
+    # Get database status
+    try:
+        db_status = setup_schema.verify_database_schema()
+        info['database_status'] = {
+            table: {
+                'exists': data['exists'],
+                'columns_ok': len(data['missing_columns']) == 0,
+                'column_count': len(data['existing_columns'])
+            }
+            for table, data in db_status['tables'].items()
+        }
+    except Exception as e:
+        info['database_status_error'] = str(e)
+    
+    # Get last refresh time
+    try:
+        info['last_refresh'] = background_tasks.get_last_refresh_time()
+    except Exception as e:
+        info['last_refresh_error'] = str(e)
+    
+    # Get event count
+    try:
+        from anvil.tables import app_tables
+        info['event_count'] = len(list(app_tables.events.search()))
+        info['weather_forecast_count'] = len(list(app_tables.weather_forecast.search()))
+    except Exception as e:
+        info['count_error'] = str(e)
+    
+    return info
+
+
+@anvil.server.callable  
+def clear_all_data():
+    """
+    DANGER: Clear all data from all tables.
+    Use this to reset the database for testing.
+    
+    Returns:
+        dict: Count of rows deleted from each table
+    """
+    from anvil.tables import app_tables
+    
+    result = {
+        'timestamp': datetime.now(),
+        'deleted': {}
+    }
+    
+    # Clear events
+    try:
+        count = 0
+        for row in app_tables.events.search():
+            row.delete()
+            count += 1
+        result['deleted']['events'] = count
+    except Exception as e:
+        result['deleted']['events'] = f"Error: {str(e)}"
+    
+    # Clear weather_forecast
+    try:
+        count = 0
+        for row in app_tables.weather_forecast.search():
+            row.delete()
+            count += 1
+        result['deleted']['weather_forecast'] = count
+    except Exception as e:
+        result['deleted']['weather_forecast'] = f"Error: {str(e)}"
+    
+    # Clear scrape_log
+    try:
+        count = 0
+        for row in app_tables.scrape_log.search():
+            row.delete()
+            count += 1
+        result['deleted']['scrape_log'] = count
+    except Exception as e:
+        result['deleted']['scrape_log'] = f"Error: {str(e)}"
+    
+    return result
+
+
+@anvil.server.callable
+def test_api_keys():
+    """
+    Test that all required API keys are configured.
+    Does NOT test if they're valid, just that they're set.
+    
+    Returns:
+        dict: Status of each API key
+    """
+    import anvil.secrets
+    
+    required_keys = [
+        'OPENWEATHER_API_KEY',
+        'FIRECRAWL_API_KEY',
+        'OPENAI_API_KEY'
+    ]
+    
+    result = {
+        'timestamp': datetime.now(),
+        'keys': {}
+    }
+    
+    for key_name in required_keys:
+        try:
+            key_value = anvil.secrets.get_secret(key_name)
+            if key_value:
+                # Show first/last 4 chars only for security
+                if len(key_value) > 8:
+                    masked = f"{key_value[:4]}...{key_value[-4:]}"
+                else:
+                    masked = "***"
+                result['keys'][key_name] = {
+                    'configured': True,
+                    'masked_value': masked
+                }
+            else:
+                result['keys'][key_name] = {
+                    'configured': False,
+                    'error': 'Secret is empty'
+                }
+        except Exception as e:
+            result['keys'][key_name] = {
+                'configured': False,
+                'error': str(e)
+            }
+    
+    # Check if all are configured
+    all_ok = all(info.get('configured', False) for info in result['keys'].values())
+    result['all_configured'] = all_ok
+    
+    return result
+
+
+@anvil.server.callable
+def run_quick_health_check():
+    """
+    Run a comprehensive health check of the application.
+    
+    Returns:
+        dict: Health check results
+    """
+    health = {
+        'timestamp': datetime.now(),
+        'overall_status': 'unknown',
+        'checks': {}
+    }
+    
+    issues = []
+    
+    # Check 1: Database tables
+    try:
+        db_status = setup_schema.verify_database_schema()
+        tables_ok = all(
+            data['exists'] and len(data['missing_columns']) == 0
+            for data in db_status['tables'].values()
+        )
+        health['checks']['database_tables'] = {
+            'status': 'ok' if tables_ok else 'error',
+            'details': db_status['tables']
+        }
+        if not tables_ok:
+            issues.append('Database tables have missing columns')
+    except Exception as e:
+        health['checks']['database_tables'] = {
+            'status': 'error',
+            'error': str(e)
+        }
+        issues.append(f'Database check failed: {str(e)}')
+    
+    # Check 2: API keys
+    try:
+        keys = test_api_keys()
+        health['checks']['api_keys'] = {
+            'status': 'ok' if keys['all_configured'] else 'error',
+            'details': {k: v['configured'] for k, v in keys['keys'].items()}
+        }
+        if not keys['all_configured']:
+            issues.append('Some API keys are not configured')
+    except Exception as e:
+        health['checks']['api_keys'] = {
+            'status': 'error',
+            'error': str(e)
+        }
+        issues.append(f'API key check failed: {str(e)}')
+    
+    # Check 3: Data freshness
+    try:
+        from . import background_tasks
+        last_refresh = background_tasks.get_last_refresh_time()
+        
+        if last_refresh:
+            age = datetime.now() - last_refresh
+            is_fresh = age.days < 7
+            health['checks']['data_freshness'] = {
+                'status': 'ok' if is_fresh else 'warning',
+                'last_refresh': last_refresh,
+                'age_days': age.days
+            }
+            if not is_fresh:
+                issues.append(f'Data is {age.days} days old')
+        else:
+            health['checks']['data_freshness'] = {
+                'status': 'warning',
+                'message': 'No data refresh has run yet'
+            }
+            issues.append('No data refresh has been run')
+    except Exception as e:
+        health['checks']['data_freshness'] = {
+            'status': 'error',
+            'error': str(e)
+        }
+    
+    # Determine overall status
+    statuses = [check.get('status', 'unknown') for check in health['checks'].values()]
+    if 'error' in statuses:
+        health['overall_status'] = 'error'
+    elif 'warning' in statuses:
+        health['overall_status'] = 'warning'
+    else:
+        health['overall_status'] = 'ok'
+    
+    health['issues'] = issues
+    health['issue_count'] = len(issues)
+    
+    return health
+
+
+# Example usage from a form:
+"""
+# In your form's __init__.py:
+
+def setup_button_click(self, **event_args):
+    '''Run database setup'''
+    result = anvil.server.call('run_database_setup')
+    
+    if result['summary']['tables_error'] > 0:
+        alert(f"Setup failed! {result['summary']['tables_error']} tables have errors.")
+    elif result['summary']['tables_fixed'] > 0:
+        alert(f"Setup complete! Created {result['summary']['total_columns_created']} columns.")
+    else:
+        alert("All tables already configured correctly!")
+
+
+def health_check_button_click(self, **event_args):
+    '''Run health check'''
+    health = anvil.server.call('run_quick_health_check')
+    
+    if health['overall_status'] == 'ok':
+        alert("✅ System is healthy!")
+    else:
+        issues = '\\n'.join(health['issues'])
+        alert(f"⚠️ Issues found:\\n{issues}")
+
+
+def clear_data_button_click(self, **event_args):
+    '''Clear all data (for testing)'''
+    if confirm("Are you sure you want to delete ALL data?"):
+        result = anvil.server.call('clear_all_data')
+        alert(f"Deleted: {result['deleted']}")
+"""
+

@@ -1,88 +1,205 @@
-# About This [Anvil](https://anvil.works/?utm_source=github:app_README) App
+# This Weekend - Memphis Event Planner
 
-### Build web apps with nothing but Python.
+An intelligent Anvil web application that helps you plan your weekend by combining real-time weather forecasts with local Memphis events, powered by AI for smart categorization and weather-aware recommendations.
 
-The app in this repository is built with [Anvil](https://anvil.works?utm_source=github:app_README), the framework for building web apps with nothing but Python. You can clone this app into your own Anvil account to use and modify.
+![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)
+![Anvil](https://img.shields.io/badge/Platform-Anvil-orange.svg)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
 
-Below, you will find:
-- [How to open this app](#opening-this-app-in-anvil-and-getting-it-online) in Anvil and deploy it online
-- Information [about Anvil](#about-anvil)
-- And links to some handy [documentation and tutorials](#tutorials-and-documentation)
+## 🌟 Features
 
-## Opening this app in Anvil and getting it online
+- **🌤️ Weather Integration:** Live weather forecasts for Friday, Saturday, and Sunday using OpenWeather One Call API 3.0
+- **📅 Event Scraping:** Automatic scraping of Memphis weekend events from ilovememphisblog.com
+- **🤖 AI-Powered Analysis:** ChatGPT automatically categorizes events:
+  - Indoor vs. Outdoor
+  - Adult vs. Family-Friendly
+  - Cost level (Free, $, $$, $$$, $$$$)
+  - Categories (Arts, Music, Sports, Food & Drink, etc.)
+- **🎯 Smart Recommendations:** Weather-aware suggestions that match outdoor events with good weather
+- **🔍 Advanced Filtering:** Multi-criteria search by cost, category, audience type, day, and more
+- **📋 Itinerary Builder:** Create personalized weekend plans with conflict detection
+- **⏰ Automated Updates:** Scheduled background tasks refresh data weekly
 
-### Cloning the app
+## 🏗️ Architecture
 
-Go to the [Anvil Editor](https://anvil.works/build?utm_source=github:app_README) (you might need to sign up for a free account) and click on “Clone from GitHub” (underneath the “Blank App” option):
+**Frontend:** Anvil (Python-based web framework with drag-and-drop UI)  
+**Backend:** Anvil Server Modules (Python)  
+**Database:** Anvil Data Tables (PostgreSQL-backed)  
+**APIs:**
+- OpenWeather One Call API 3.0 (weather forecasts)
+- Firecrawl API (web scraping)
+- OpenAI API (event analysis)
 
-<img src="https://anvil.works/docs/version-control/img/git/clone-from-github.png" alt="Clone from GitHub"/>
+## 📂 Project Structure
 
-Enter the URL of this GitHub repository. If you're not yet logged in, choose "GitHub credentials" as the authentication method and click "Connect to GitHub".
+```
+thisweekend/
+├── README.md                          # This file
+├── project_plan.md                    # Comprehensive project plan (12 phases)
+├── IMPLEMENTATION_SUMMARY.md          # ⭐ What's been built
+├── NEXT_STEPS.md                      # ⭐ Your next actions
+├── SERVER_FUNCTIONS_REFERENCE.md     # Complete API reference
+├── setup_data_tables.py               # Table setup helper script
+├── server_code/                       # ✅ All 7 server modules (COMPLETE)
+│   ├── config.py                      # Configuration constants
+│   ├── weather_service.py             # OpenWeather API integration
+│   ├── scraper_service.py             # Firecrawl integration
+│   ├── ai_service.py                  # OpenAI ChatGPT integration
+│   ├── data_processor.py              # Recommendation engine
+│   ├── background_tasks.py            # Task orchestration
+│   ├── api_helpers.py                 # Common utilities
+│   └── requirements.txt               # Dependencies list
+└── client_code/                       # Anvil client forms (to be created)
+    └── Form1/                         # Main form (basic structure)
+```
 
-<img src="https://anvil.works/docs/version-control/img/git/clone-app-from-git.png" alt="Clone App from Git modal"/>
+## 🚀 Quick Start
 
-Finally, click "Clone App".
+### ✅ Phase 1 Complete!
 
-This app will then be in your Anvil account, ready for you to run it or start editing it! **Any changes you make will be automatically pushed back to this repository, if you have permission!** You might want to [make a new branch](https://anvil.works/docs/version-control?utm_source=github:app_README).
+All server-side code has been implemented. The complete data pipeline is ready to test!
 
-### Running the app yourself:
+### Where You Are Now
 
-Find the **Run** button at the top-right of the Anvil editor:
+You've completed:
+- ✅ Anvil app created
+- ✅ API keys configured in Anvil Secrets
+- ✅ Empty Data Tables created
+- ✅ All 7 server modules built and ready
 
-<img src="https://anvil.works/docs/img/run-button-new-ide.png"/>
+### Next Step: Automatic Database Setup ⚡
 
+**NEW: Automatic column creation!** No more manual setup required.
 
-### Publishing the app on your own URL
+**👉 See [ADMIN_TOOLS_GUIDE.md](ADMIN_TOOLS_GUIDE.md) for complete instructions**
 
-Now you've cloned the app, you can [deploy it on the internet with two clicks](https://anvil.works/docs/deployment/quickstart?utm_source=github:app_README)! Find the **Publish** button at the top-right of the editor:
+**Quick setup:**
+1. Verify your 3 empty tables exist in Anvil
+2. Add a button to any form with this code:
+   ```python
+   result = anvil.server.call('run_database_setup')
+   ```
+3. Click the button - all 33 columns created automatically!
+4. Run test: `anvil.server.call('trigger_data_refresh')`
 
-<img src="https://anvil.works/docs/deployment/img/environments/publish-button.png"/>
+**Alternative:** Manual setup instructions in [NEXT_STEPS.md](NEXT_STEPS.md)
 
-When you click it, you will see the Publish dialog:
+## 📖 Documentation
 
-<img src="https://anvil.works/docs/deployment/img/quickstart/empty-environments-dialog.png"/>
+### 🌟 Start Here
+- **[IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)** - What's been built and project status
+- **[NEXT_STEPS.md](NEXT_STEPS.md)** - Your next actions (add table columns)
 
-Click **Publish This App**, and you will see that your app has been deployed at a new, public URL:
+### Reference
+- **[SERVER_FUNCTIONS_REFERENCE.md](SERVER_FUNCTIONS_REFERENCE.md)** - Complete API reference for client code
+- **[project_plan.md](project_plan.md)** - Complete project plan with 12 phases, 180+ tasks
+- **[setup_data_tables.py](setup_data_tables.py)** - Table setup helper script
 
-<img src="https://anvil.works/docs/deployment/img/quickstart/default-public-environment.png"/>
+## 🗄️ Database Schema
 
-That's it - **your app is now online**. Click the link and try it!
+### `events` Table (17 columns)
+Stores all scraped and analyzed event data.
 
-## About Anvil
+### `weather_forecast` Table (9 columns)
+Caches weather forecasts for the upcoming weekend.
 
-If you’re new to Anvil, welcome! Anvil is a platform for building full-stack web apps with nothing but Python. No need to wrestle with JS, HTML, CSS, Python, SQL and all their frameworks – just build it all in Python.
+### `scrape_log` Table (7 columns)
+Tracks background task execution and errors.
 
-<figure>
-<figcaption><h3>Learn About Anvil In 80 Seconds👇</h3></figcaption>
-<a href="https://www.youtube.com/watch?v=3V-3g1mQ5GY" target="_blank">
-<img
-  src="https://anvil-website-static.s3.eu-west-2.amazonaws.com/anvil-in-80-seconds-YouTube.png"
-  alt="Anvil In 80 Seconds"
-/>
-</a>
-</figure>
-<br><br>
+See [ANVIL_SETUP_INSTRUCTIONS.md](ANVIL_SETUP_INSTRUCTIONS.md) for complete schemas.
 
-[![Try Anvil Free](https://anvil-website-static.s3.eu-west-2.amazonaws.com/mark-complete.png)](https://anvil.works?utm_source=github:app_README)
+## 🔧 Development Workflow
 
-To learn more about Anvil, visit [https://anvil.works](https://anvil.works?utm_source=github:app_README).
+1. **Server Code Changes:**
+   - Edit Python files in `server_code/` locally
+   - Commit and push to GitHub
+   - Pull changes in Anvil editor
 
-## Tutorials and documentation
+2. **UI Changes:**
+   - Must be made in Anvil's visual editor
+   - Forms, components, and styling done in Anvil UI
 
-### Tutorials
+3. **Data Table Changes:**
+   - Schema changes must be made in Anvil UI
+   - Use the setup script for initial column creation
 
-If you are just starting out with Anvil, why not **[try the 10-minute Feedback Form tutorial](https://anvil.works/learn/tutorials/feedback-form?utm_source=github:app_README)**? It features step-by-step tutorials that will introduce you to the most important parts of Anvil.
+## 📅 Development Timeline
 
-Anvil has tutorials on:
-- [Building Dashboards](https://anvil.works/learn/tutorials/data-science#dashboarding?utm_source=github:app_README)
-- [Multi-User Applications](https://anvil.works/learn/tutorials/multi-user-apps?utm_source=github:app_README)
-- [Building Web Apps with an External Database](https://anvil.works/learn/tutorials/external-database?utm_source=github:app_README)
-- [Deploying Machine Learning Models](https://anvil.works/learn/tutorials/deploy-machine-learning-model?utm_source=github:app_README)
-- [Taking Payments with Stripe](https://anvil.works/learn/tutorials/stripe?utm_source=github:app_README)
-- And [much more....](https://anvil.works/learn/tutorials?utm_source=github:app_README)
+- **Full Build:** 20-32 days
+- **MVP:** 17-27 days
 
-### Reference Documentation
+See [project_plan.md](project_plan.md) for detailed phase breakdown.
 
-The Anvil reference documentation provides comprehensive information on how to use Anvil to build web applications. You can find the documentation [here](https://anvil.works/docs/overview?utm_source=github:app_README).
+## 💰 Cost Estimates
 
-If you want to get to the basics as quickly as possible, each section of this documentation features a [Quick-Start Guide](https://anvil.works/docs/overview/quickstarts?utm_source=github:app_README).
+Weekly operation (assuming 50 events/week):
+- **OpenWeather:** ~$0.02/week
+- **Firecrawl:** Varies by plan
+- **OpenAI:** ~$0.05/week (GPT-3.5-turbo) or ~$0.75/week (GPT-4)
+- **Total:** ~$0.07-$0.80/week
+
+## 🔑 Required Anvil Secrets
+
+Configure these in Anvil App Settings → Secrets:
+
+1. `OPENWEATHER_API_KEY` - OpenWeather One Call API 3.0
+2. `FIRECRAWL_API_KEY` - Firecrawl web scraping
+3. `OPENAI_API_KEY` - OpenAI ChatGPT API
+
+## 📊 Project Status
+
+### ✅ Completed
+- **Phase 1.1-1.3:** Server architecture complete (7 modules)
+- **Phase 2:** Weather API integration ✅
+- **Phase 3:** Event scraping & parsing ✅
+- **Phase 4:** AI event analysis ✅
+- **Phase 5:** Recommendation engine ✅
+- **Phase 5.5:** Background task orchestration ✅
+
+### ⏳ Current
+- **Phase 1.2:** Add columns to Data Tables ← **YOU ARE HERE**
+
+### 🔜 Next
+- **Phase 2-5:** Test complete data pipeline
+- **Phase 6:** Build Anvil UI (weather display, event cards)
+- **Phase 7:** Implement filtering & search
+- **Phase 8:** Build itinerary builder
+- **Phase 9-12:** Testing, polish, deployment
+
+See [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) for detailed status.
+
+## 🎯 Success Criteria
+
+✅ Successfully retrieves weather for Friday, Saturday, Sunday  
+✅ Scrapes events from ilovememphisblog.com/weekend  
+✅ AI correctly categorizes events  
+✅ Weather recommendations are helpful  
+✅ Filters work correctly  
+✅ Itinerary builder creates chronological plans  
+✅ UI is intuitive and mobile-responsive  
+✅ Handles errors gracefully  
+✅ Performance < 5 second initial load  
+
+## 🤝 Contributing
+
+This is a personal project, but suggestions and feedback are welcome!
+
+## 📝 License
+
+MIT License - feel free to use this as a template for your own projects.
+
+## 🙏 Acknowledgments
+
+- [Anvil](https://anvil.works) - Python web framework
+- [OpenWeather](https://openweathermap.org) - Weather data
+- [Firecrawl](https://firecrawl.dev) - Web scraping
+- [OpenAI](https://openai.com) - AI analysis
+- [I Love Memphis Blog](https://ilovememphisblog.com) - Event data source
+
+## 📧 Contact
+
+For questions or suggestions, please open an issue in the repository.
+
+---
+
+**Built with ❤️ in Memphis, TN**
