@@ -12,18 +12,57 @@ import re
 from . import config
 from . import api_helpers
 
+# Import direct scraper for fallback
+try:
+    from . import scraper_direct
+    DIRECT_SCRAPER_AVAILABLE = True
+except ImportError:
+    DIRECT_SCRAPER_AVAILABLE = False
+    print("Warning: Direct scraper not available")
+
 
 def scrape_weekend_events():
     """
-    Scrape weekend events from ilovememphisblog.com/weekend using Firecrawl.
+    Scrape weekend events from ilovememphisblog.com/weekend.
+    Tries Firecrawl API first, falls back to direct scraping.
     
     Returns:
-        str: Raw markdown content from the website
+        str: Raw text content from the website
         
     Raises:
-        Exception: If scraping fails
+        Exception: If all scraping methods fail
     """
     print(f"Scraping events from {config.TARGET_WEBSITE_URL}...")
+    
+    # Try Firecrawl first
+    try:
+        return scrape_with_firecrawl()
+    except Exception as firecrawl_error:
+        print(f"  ⚠️ Firecrawl failed: {str(firecrawl_error)[:200]}")
+        
+        # Fall back to direct scraping
+        if DIRECT_SCRAPER_AVAILABLE:
+            print("  🔄 Switching to direct HTTP scraping...")
+            try:
+                return scraper_direct.scrape_weekend_events_direct()
+            except Exception as direct_error:
+                print(f"  ❌ Direct scraping also failed: {direct_error}")
+                raise Exception(f"All scraping methods failed. Firecrawl: {str(firecrawl_error)[:100]}, Direct: {str(direct_error)[:100]}")
+        else:
+            raise
+
+
+def scrape_with_firecrawl():
+    """
+    Scrape using Firecrawl API.
+    
+    Returns:
+        str: Markdown content from Firecrawl
+        
+    Raises:
+        Exception: If Firecrawl fails
+    """
+    print("  Trying Firecrawl API...")
     
     # Get API key
     api_key = api_helpers.get_api_key("FIRECRAWL_API_KEY")
@@ -125,25 +164,25 @@ def scrape_weekend_events():
         
         print(f"HTTP Error {e.status}: {error_details}")
         
-        # If we couldn't get details, suggest alternatives
-        if error_details == "No details available":
-            print("\n  Possible causes for HTTP 400:")
-            print("    1. API key doesn't have v2 access (check firecrawl.dev dashboard)")
-            print("    2. Free tier limitation (may need paid plan)")
-            print("    3. URL requires stealth mode or is blocked")
-            print("    4. Invalid request format")
-            print("\n  Switching to direct scraper as fallback...")
-            
-            # Try direct scraper as fallback
+        # Always try fallback on Firecrawl error
+        print(f"\n  ⚠️ Firecrawl API failed with error: {error_details}")
+        print("  Possible causes:")
+        print("    1. API key doesn't have v2 access")
+        print("    2. Free tier limitation")
+        print("    3. URL validation issue (Firecrawl rejects this URL)")
+        print("    4. Plan doesn't support this feature")
+        
+        # Try direct scraper as fallback
+        if DIRECT_SCRAPER_AVAILABLE:
+            print("\n  🔄 Switching to direct scraper as fallback...")
             try:
-                from . import scraper_direct
-                print("  Attempting direct scraping without Firecrawl API...")
+                print("  Attempting direct HTTP scraping...")
                 return scraper_direct.scrape_weekend_events_direct()
             except Exception as direct_error:
-                print(f"  Direct scraping also failed: {direct_error}")
-                raise Exception(f"Firecrawl API error {e.status} AND direct scraping failed. Original error: {error_details}")
-        
-        raise Exception(f"Firecrawl API error {e.status}: {error_details}")
+                print(f"  ❌ Direct scraping also failed: {direct_error}")
+                raise Exception(f"Both Firecrawl AND direct scraping failed. Firecrawl: {error_details}, Direct: {str(direct_error)}")
+        else:
+            raise Exception(f"Firecrawl failed and no backup scraper available: {error_details}")
         
     except Exception as e:
         print(f"Error scraping website: {str(e)}")
@@ -155,16 +194,17 @@ def scrape_weekend_events():
 
 def parse_events_from_markdown(markdown_content):
     """
-    Parse event data from markdown content.
+    Parse event data from markdown or text content.
     Extracts event details using pattern matching.
+    Works with both Firecrawl markdown and direct HTML text.
     
     Args:
-        markdown_content: Raw markdown text from website
+        markdown_content: Raw markdown or text from website
         
     Returns:
         list: List of event dictionaries
     """
-    print("Parsing events from markdown content...")
+    print(f"Parsing events from content ({len(markdown_content)} characters)...")
     
     events = []
     weekend_dates = api_helpers.get_weekend_dates()
