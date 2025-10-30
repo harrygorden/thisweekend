@@ -59,14 +59,17 @@ def analyze_event(event):
     }
     
     try:
-        # In Anvil, http.request returns the response content directly
-        response_text = anvil.http.request(
+        # In Anvil, http.request returns a StreamingMedia object
+        response = anvil.http.request(
             url,
             method="POST",
             json=payload,
             headers=headers,
             timeout=30
         )
+        
+        # Convert StreamingMedia to string
+        response_text = response.get_bytes().decode('utf-8')
         
         # Parse response
         result = json.loads(response_text)

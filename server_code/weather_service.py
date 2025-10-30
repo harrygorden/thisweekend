@@ -42,16 +42,19 @@ def fetch_weekend_weather():
     }
     
     try:
-        # In Anvil, http.request returns the response content directly
-        # It throws an exception on error, so no need to check status_code
-        response_text = anvil.http.request(
+        # In Anvil, http.request returns a StreamingMedia object
+        # We need to convert it to bytes/string first
+        response = anvil.http.request(
             url,
             method="GET",
             data=params,
             timeout=30
         )
         
-        # Parse response (response_text is already a string)
+        # Convert StreamingMedia to string
+        response_text = response.get_bytes().decode('utf-8')
+        
+        # Parse response
         weather_data = json.loads(response_text)
         
         # Extract weekend forecasts
