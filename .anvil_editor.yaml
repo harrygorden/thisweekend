@@ -5,7 +5,8 @@ unique_ids:
   forms:
     AdminForm: 3WDLJ3IRZIOKYPOZH3HWZVC2TKQ55JE2
     Form1: CTQCKOCF75PGF2GZ27HNHWZDDK6NU4MI
-  modules: {}
+  modules:
+    EventCard: FDY3HDGQSC2UQWBEQ7BO4CNQ227BBBDR
   scripts: {}
   server_modules:
     admin_tools: L5OAIAIDHPDE3UQCX767ZPMDHSRTUFRU
