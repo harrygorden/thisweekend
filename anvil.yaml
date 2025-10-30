@@ -56,6 +56,11 @@ db_schema:
       type: string
     server: full
     title: events
+  hourly_weather:
+    client: none
+    columns: []
+    server: full
+    title: hourly_weather
   scrape_log:
     client: none
     columns:
