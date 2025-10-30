@@ -59,7 +59,8 @@ def analyze_event(event):
     }
     
     try:
-        response = anvil.http.request(
+        # In Anvil, http.request returns the response content directly
+        response_text = anvil.http.request(
             url,
             method="POST",
             json=payload,
@@ -67,11 +68,8 @@ def analyze_event(event):
             timeout=30
         )
         
-        if response.status_code != 200:
-            raise Exception(f"OpenAI API returned status {response.status_code}: {response.get_text()}")
-        
         # Parse response
-        result = json.loads(response.get_text())
+        result = json.loads(response_text)
         content = result["choices"][0]["message"]["content"]
         analysis = json.loads(content)
         

@@ -247,9 +247,19 @@ def cleanup_old_data():
         old_events = app_tables.events.search()
         deleted_events = 0
         for event in old_events:
-            if event["scraped_at"] and event["scraped_at"] < event_cutoff:
-                event.delete()
-                deleted_events += 1
+            try:
+                # Handle both timezone-aware and naive datetimes
+                scraped_at = event["scraped_at"]
+                if scraped_at:
+                    # Remove timezone info for comparison if present
+                    if hasattr(scraped_at, 'replace') and scraped_at.tzinfo is not None:
+                        scraped_at = scraped_at.replace(tzinfo=None)
+                    if scraped_at < event_cutoff:
+                        event.delete()
+                        deleted_events += 1
+            except (TypeError, AttributeError):
+                # Skip if datetime comparison fails
+                pass
         
         if deleted_events > 0:
             print(f"Deleted {deleted_events} old events")
@@ -258,9 +268,16 @@ def cleanup_old_data():
         old_weather = app_tables.weather_forecast.search()
         deleted_weather = 0
         for forecast in old_weather:
-            if forecast["fetched_at"] and forecast["fetched_at"] < weather_cutoff:
-                forecast.delete()
-                deleted_weather += 1
+            try:
+                fetched_at = forecast["fetched_at"]
+                if fetched_at:
+                    if hasattr(fetched_at, 'replace') and fetched_at.tzinfo is not None:
+                        fetched_at = fetched_at.replace(tzinfo=None)
+                    if fetched_at < weather_cutoff:
+                        forecast.delete()
+                        deleted_weather += 1
+            except (TypeError, AttributeError):
+                pass
         
         if deleted_weather > 0:
             print(f"Deleted {deleted_weather} old weather forecasts")
@@ -269,9 +286,16 @@ def cleanup_old_data():
         old_logs = app_tables.scrape_log.search()
         deleted_logs = 0
         for log in old_logs:
-            if log["run_date"] and log["run_date"] < log_cutoff:
-                log.delete()
-                deleted_logs += 1
+            try:
+                run_date = log["run_date"]
+                if run_date:
+                    if hasattr(run_date, 'replace') and run_date.tzinfo is not None:
+                        run_date = run_date.replace(tzinfo=None)
+                    if run_date < log_cutoff:
+                        log.delete()
+                        deleted_logs += 1
+            except (TypeError, AttributeError):
+                pass
         
         if deleted_logs > 0:
             print(f"Deleted {deleted_logs} old scrape logs")

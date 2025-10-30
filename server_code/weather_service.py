@@ -42,18 +42,17 @@ def fetch_weekend_weather():
     }
     
     try:
-        response = anvil.http.request(
+        # In Anvil, http.request returns the response content directly
+        # It throws an exception on error, so no need to check status_code
+        response_text = anvil.http.request(
             url,
             method="GET",
             data=params,
             timeout=30
         )
         
-        if response.status_code != 200:
-            raise Exception(f"OpenWeather API returned status {response.status_code}: {response.get_text()}")
-        
-        # Parse response
-        weather_data = json.loads(response.get_text())
+        # Parse response (response_text is already a string)
+        weather_data = json.loads(response_text)
         
         # Extract weekend forecasts
         weekend_data = extract_weekend_forecasts(weather_data)

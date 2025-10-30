@@ -42,7 +42,8 @@ def scrape_weekend_events():
     }
     
     try:
-        response = anvil.http.request(
+        # In Anvil, http.request returns the response content directly
+        response_text = anvil.http.request(
             url,
             method="POST",
             json=payload,
@@ -50,11 +51,8 @@ def scrape_weekend_events():
             timeout=config.FIRECRAWL_TIMEOUT
         )
         
-        if response.status_code != 200:
-            raise Exception(f"Firecrawl API returned status {response.status_code}: {response.get_text()}")
-        
         # Parse response
-        result = json.loads(response.get_text())
+        result = json.loads(response_text)
         
         # Extract markdown content
         markdown_content = result.get("data", {}).get("markdown", "")
