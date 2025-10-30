@@ -1,4 +1,20 @@
 allow_embedding: false
+db_schema:
+  events:
+    client: none
+    columns: []
+    server: full
+    title: events
+  scrape_log:
+    client: none
+    columns: []
+    server: full
+    title: scrape_log
+  weather_forecast:
+    client: none
+    columns: []
+    server: full
+    title: weather_forecast
 dependencies: []
 metadata: {title: This Weekend}
 name: ThisWeekend
@@ -9,8 +25,23 @@ runtime_options:
   server_spec: {base: python310-standard}
   server_version: python3-sandbox
   version: 2
+scheduled_tasks: []
+secrets:
+  FIRECRAWL_API_KEY:
+    type: secret
+    value: {PLE3BZEKOON63IQ4: 6xz0NQaQ+vWo8BqRqJmT4pVOQI1JI7B2ztF6rf2440SkqHqNFTNDxETvGSriwD4kRogDF4hjA2tbzUaDa3hL9oaJQipAtshSvwg+wyJ8coXZs4F52aT1Kg3TvwKw/hrH9WxKlVpSvx867mg7MWXzE0QkSOLpzED+o5Klx22/7zCaXw==}
+  OPENAI_API_KEY:
+    type: secret
+    value: {PLE3BZEKOON63IQ4: ZkSL/fYJFq97Bw8s0U2EsNlelDnGtHpbEE2gR9kF7TK232IKx/Y2+ehkh1ZoE93Cl1Lct+HDp/bvLd/hRJtRiNn3FIG+zlIv3KFOQ4Do4+DPZNjnywrCXkvRfQ61c/zMfME6GI2Prp3QVCYz6ptLh/m738cx+ZeArBQJ+uGceqdSbK90rOiriJaNbdEwqz4ABkSF4VswZN75AvMVLpeH5tFQ+z8swYWo7UwrePYwfapRPyQdRWXAh2P7Rq8SdWtm+3U9e4jvnjk/EFHtOyt7pf1NOMTTCUYlqda36BEKE+hx/hdjUMaqgcUDo2DvATSSrALnHUSMUT6gw/sbm+p6hOPRPw==}
+  OPENWEATHER_API_KEY:
+    type: secret
+    value: {PLE3BZEKOON63IQ4: uIsLKtETce78lRIlwOOJGBE0iwkMUuqWkHaPoXaN/Pp/M6T4FEZkTcIo966jBIwQ0em513UsfDpedwdgt6AUHXu+hLMB5+nRqF8L1Y//WdzNiWbWir1UoTunR5KJqiQP54+jcDyO2vDcIVE5fEWqWl6VbEKbVAl3AWsam8Ncqg==}
 services:
 - client_config: {}
   server_config: {auto_create_missing_columns: true}
   source: /runtime/services/tables.yml
+- client_config: {}
+  server_config: {}
+  source: /runtime/services/anvil/secrets.yml
 startup_form: Form1
+uplink_visible: true
