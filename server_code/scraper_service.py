@@ -28,23 +28,25 @@ def scrape_weekend_events():
     # Get API key
     api_key = api_helpers.get_api_key("FIRECRAWL_API_KEY")
     
-    # Firecrawl API v1 endpoint
-    url = "https://api.firecrawl.dev/v1/scrape"
+    # Firecrawl API v2 endpoint (updated from v1)
+    url = "https://api.firecrawl.dev/v2/scrape"
     
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"
     }
     
-    # Updated payload format for Firecrawl v1
+    # Updated payload format for Firecrawl v2
+    # Reference: https://context7.com/firecrawl/firecrawl/llms.txt
     payload = {
         "url": config.TARGET_WEBSITE_URL,
-        "formats": ["markdown"],  # Explicit list format
-        "onlyMainContent": True,  # Get only main content
-        "waitFor": 0  # No wait time needed
+        "formats": ["markdown", "html"]  # Request markdown and html
     }
     
     try:
+        print(f"  Making request to {url}")
+        print(f"  Payload: {payload}")
+        
         # In Anvil, http.request returns a StreamingMedia object
         response = anvil.http.request(
             url,
@@ -56,21 +58,33 @@ def scrape_weekend_events():
         
         # Convert StreamingMedia to string
         response_text = response.get_bytes().decode('utf-8')
+        print(f"  Received {len(response_text)} bytes")
         
         # Parse response
         result = json.loads(response_text)
         
-        # Extract markdown content (updated path for v1 response)
+        # Check if request was successful
+        if not result.get("success", False):
+            error_msg = result.get("error", "Unknown error")
+            raise Exception(f"Firecrawl returned error: {error_msg}")
+        
+        # Extract markdown content from v2 response format
+        # v2 format: {"success": true, "data": {"markdown": "...", "metadata": {...}}}
         if "data" in result:
-            markdown_content = result["data"].get("markdown", "")
-        elif "markdown" in result:
-            markdown_content = result.get("markdown", "")
+            data = result["data"]
+            markdown_content = data.get("markdown", "")
+            
+            # Log metadata for debugging
+            if "metadata" in data:
+                metadata = data["metadata"]
+                print(f"  Page title: {metadata.get('title', 'Unknown')}")
+                print(f"  Status code: {metadata.get('statusCode', 'Unknown')}")
         else:
-            # Fallback: try to get any text content
-            markdown_content = result.get("content", "")
+            # Fallback for unexpected format
+            markdown_content = result.get("markdown", "")
         
         if not markdown_content:
-            raise Exception(f"No markdown content returned from Firecrawl. Response: {response_text[:500]}")
+            raise Exception(f"No markdown content returned from Firecrawl. Response keys: {list(result.keys())}")
         
         print(f"Successfully scraped {len(markdown_content)} characters of content")
         return markdown_content
