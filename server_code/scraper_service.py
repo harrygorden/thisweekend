@@ -46,8 +46,10 @@ def scrape_weekend_events():
     try:
         print(f"  Making request to {url}")
         print(f"  Payload: {payload}")
+        print(f"  API Key (first 10 chars): {api_key[:10]}...")
         
         # In Anvil, http.request returns a StreamingMedia object
+        # Anvil throws HttpError on non-2xx responses
         response = anvil.http.request(
             url,
             method="POST",
@@ -88,6 +90,21 @@ def scrape_weekend_events():
         
         print(f"Successfully scraped {len(markdown_content)} characters of content")
         return markdown_content
+        
+    except anvil.http.HttpError as e:
+        # Capture the error response body for HTTP errors
+        error_details = "No details available"
+        try:
+            if hasattr(e, 'content'):
+                error_body = e.content.get_bytes().decode('utf-8')
+                error_json = json.loads(error_body)
+                error_details = json.dumps(error_json, indent=2)
+                print(f"  Firecrawl error response: {error_details}")
+        except:
+            pass
+        
+        print(f"HTTP Error {e.status}: {error_details}")
+        raise Exception(f"Firecrawl API error {e.status}: {error_details}")
         
     except Exception as e:
         print(f"Error scraping website: {str(e)}")
