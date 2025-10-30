@@ -93,20 +93,20 @@ def get_existing_columns(table_name):
         table_name: Name of the table
         
     Returns:
-        list: List of column names, or empty list if table is empty or doesn't exist
+        list: List of column names, or empty list if table doesn't exist
     """
     try:
         table = getattr(app_tables, table_name)
+        schema = SCHEMA_DEFINITIONS[table_name]
+        existing_cols = []
         
         # Try to get the first row to examine columns
         rows = list(table.search())
+        
         if rows:
-            # Get columns from existing row
+            # Table has data - check which columns exist
             first_row = rows[0]
-            # Anvil row objects don't have a direct way to list columns,
-            # so we'll try each expected column
-            existing_cols = []
-            for col_name in SCHEMA_DEFINITIONS[table_name].keys():
+            for col_name in schema.keys():
                 try:
                     # Try to access the column
                     _ = first_row[col_name]
@@ -115,8 +115,32 @@ def get_existing_columns(table_name):
                     pass
             return existing_cols
         else:
-            # Empty table, no columns to detect
-            return []
+            # Empty table - try adding and immediately deleting a test row
+            # This is the only way to detect columns on an empty Anvil table
+            try:
+                # Create a minimal test row with one column
+                test_col = list(schema.keys())[0]
+                col_type, sample_value = schema[test_col]
+                test_row = table.add_row(**{test_col: sample_value})
+                
+                # Now check which columns exist
+                for col_name in schema.keys():
+                    try:
+                        _ = test_row[col_name]
+                        existing_cols.append(col_name)
+                    except KeyError:
+                        pass
+                
+                # Delete the test row
+                test_row.delete()
+                
+                return existing_cols
+                
+            except Exception as e:
+                print(f"  Could not detect columns on empty table '{table_name}': {str(e)}")
+                # If we can't detect, assume no columns exist
+                return []
+            
     except Exception as e:
         print(f"Error getting columns for '{table_name}': {str(e)}")
         return []
