@@ -76,10 +76,11 @@ def calculate_recommendation_score(event):
     Returns:
         int: Recommendation score (0-100)
     """
-    weather_score = event.get("weather_score", 50)
-    is_outdoor = event.get("is_outdoor", False)
-    is_indoor = event.get("is_indoor", True)
-    start_time = event.get("start_time", "")
+    # Anvil rows don't have .get() - use direct access with defaults
+    weather_score = event["weather_score"] if event["weather_score"] is not None else 50
+    is_outdoor = event["is_outdoor"] if event["is_outdoor"] is not None else False
+    is_indoor = event["is_indoor"] if event["is_indoor"] is not None else True
+    start_time = event["start_time"] or ""
     
     if is_outdoor and not is_indoor:
         # Pure outdoor event - heavily weighted by weather
@@ -184,10 +185,10 @@ def get_weather_warning(event):
     Returns:
         str: Warning message or None if no warning needed
     """
-    if not event.get("is_outdoor"):
+    if not event["is_outdoor"]:
         return None
     
-    weather_score = event.get("weather_score", 100)
+    weather_score = event["weather_score"] if event["weather_score"] is not None else 100
     
     # Get weather details
     weather_data = weather_service.get_weather_for_datetime(
@@ -268,7 +269,7 @@ def get_filtered_events(filters=None):
         
         # Filter by categories
         if filters.get("categories"):
-            event_categories = event.get("categories", [])
+            event_categories = event["categories"] or []
             if not any(cat in event_categories for cat in filters["categories"]):
                 continue
         
@@ -281,9 +282,9 @@ def get_filtered_events(filters=None):
         include_indoor = filters.get("indoor", True)
         include_outdoor = filters.get("outdoor", True)
         
-        if not include_indoor and event.get("is_indoor"):
+        if not include_indoor and event["is_indoor"]:
             continue
-        if not include_outdoor and event.get("is_outdoor"):
+        if not include_outdoor and event["is_outdoor"]:
             continue
         
         filtered_events.append(event)
