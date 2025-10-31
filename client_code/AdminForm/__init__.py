@@ -4,7 +4,6 @@ import anvil.server
 import anvil.tables as tables
 import anvil.tables.query as q
 from anvil.tables import app_tables
-import traceback
 
 
 class AdminForm(AdminFormTemplate):
@@ -347,7 +346,7 @@ class AdminForm(AdminFormTemplate):
                 alert("❌ All Firecrawl tests failed\n\nCheck output for error details.", title="API Test Failed")
             
         except Exception as e:
-            self.status_output.text = f"❌ Test failed: {str(e)}\n\n{traceback.format_exc()}"
+            self.status_output.text = f"❌ Test failed: {str(e)}\n\nCheck the console for detailed error information."
             alert(f"❌ Test failed:\n{str(e)}", title="Error")
     
     
@@ -413,7 +412,7 @@ class AdminForm(AdminFormTemplate):
                 alert(f"❌ Scraping failed:\n\n{result.get('error', 'Unknown')}", title="Scraping Test Failed")
             
         except Exception as e:
-            self.status_output.text = f"❌ Test failed: {str(e)}\n\n{traceback.format_exc()}"
+            self.status_output.text = f"❌ Test failed: {str(e)}\n\nCheck the console for detailed error information."
             alert(f"❌ Test failed:\n{str(e)}", title="Error")
         
         finally:
