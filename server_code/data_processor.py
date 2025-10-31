@@ -304,18 +304,26 @@ def get_all_events(sort_by="recommendation"):
     Returns:
         list: List of event dictionaries
     """
-    events = list(app_tables.events.search())
-    
-    # Sort events
-    if sort_by == "recommendation":
-        events.sort(key=lambda e: e.get("recommendation_score", 0), reverse=True)
-    elif sort_by == "time":
-        events.sort(key=lambda e: (e.get("date", datetime.max.date()), e.get("start_time", "ZZZ")))
-    elif sort_by == "cost":
-        cost_order = {"Free": 0, "$": 1, "$$": 2, "$$$": 3, "$$$$": 4}
-        events.sort(key=lambda e: cost_order.get(e.get("cost_level", "$"), 5))
-    
-    return serialize_events(events)
+    try:
+        events = list(app_tables.events.search())
+        
+        print(f"Found {len(events)} events in database")
+        
+        # Sort events
+        if sort_by == "recommendation":
+            events.sort(key=lambda e: e["recommendation_score"] or 0, reverse=True)
+        elif sort_by == "time":
+            events.sort(key=lambda e: (e["date"] or datetime.max.date(), e["start_time"] or "ZZZ"))
+        elif sort_by == "cost":
+            cost_order = {"Free": 0, "$": 1, "$$": 2, "$$$": 3, "$$$$": 4}
+            events.sort(key=lambda e: cost_order.get(e["cost_level"] or "$", 5))
+        
+        return serialize_events(events)
+    except Exception as e:
+        print(f"Error in get_all_events: {e}")
+        import traceback
+        traceback.print_exc()
+        raise
 
 
 def serialize_events(events):
@@ -331,25 +339,30 @@ def serialize_events(events):
     serialized = []
     
     for event in events:
-        serialized.append({
-            "event_id": event["event_id"],
-            "title": event["title"],
-            "description": event["description"],
-            "date": event["date"],
-            "day_name": event["date"].strftime("%A") if event["date"] else None,
-            "start_time": event["start_time"],
-            "end_time": event["end_time"],
-            "location": event["location"],
-            "cost_raw": event["cost_raw"],
-            "cost_level": event["cost_level"],
-            "is_indoor": event["is_indoor"],
-            "is_outdoor": event["is_outdoor"],
-            "audience_type": event["audience_type"],
-            "categories": event["categories"],
-            "weather_score": event["weather_score"],
-            "recommendation_score": event["recommendation_score"],
-            "weather_warning": get_weather_warning(event)
-        })
+        try:
+            serialized.append({
+                "event_id": event["event_id"],
+                "title": event["title"] or "Untitled Event",
+                "description": event["description"] or "",
+                "date": event["date"],
+                "day_name": event["date"].strftime("%A") if event["date"] else None,
+                "start_time": event["start_time"] or "Time TBD",
+                "end_time": event["end_time"] or "",
+                "location": event["location"] or "Location TBD",
+                "cost_raw": event["cost_raw"] or "",
+                "cost_level": event["cost_level"] or "$",
+                "is_indoor": event["is_indoor"] if event["is_indoor"] is not None else False,
+                "is_outdoor": event["is_outdoor"] if event["is_outdoor"] is not None else False,
+                "audience_type": event["audience_type"] or "all-ages",
+                "categories": event["categories"] or [],
+                "weather_score": event["weather_score"] or 0,
+                "recommendation_score": event["recommendation_score"] or 0,
+                "weather_warning": get_weather_warning(event)
+            })
+        except Exception as e:
+            print(f"Error serializing event {event.get_id()}: {e}")
+            # Skip this event but continue with others
+            continue
     
     return serialized
 
