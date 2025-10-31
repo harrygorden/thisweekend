@@ -1,71 +1,43 @@
-container:
-  type: ColumnPanel
-  properties: {role: card, tooltip: '', border: '', foreground: '', visible: true,
-    wrap_on: mobile, col_spacing: medium, spacing_above: small, col_widths: '{}',
-    spacing_below: small, background: ''}
 components:
-- type: Card
-  properties: {role: null, tooltip: '', border: '', foreground: '', visible: true,
-    wrap_on: mobile, col_spacing: medium, spacing_above: small, auto_expand: true,
-    col_widths: '{}', spacing_below: small, background: '#E3F2FD'}
-  name: card_1
-  layout_properties: {grid_position: 'QPZWNQ,KGUKKH'}
-  components:
-  - type: Label
-    properties: {role: null, align: center, tooltip: '', border: '', foreground: '',
-      visible: true, text: Friday, font_size: 18, font: '', spacing_above: small,
-      icon_align: left, spacing_below: none, italic: false, background: '', bold: true,
-      underline: false, icon: ''}
+- components:
+  - layout_properties: {grid_position: 'TLGWEJ,GTWFKH'}
     name: day_label
-    layout_properties: {grid_position: 'TLGWEJ,GTWFKH'}
-  - type: Label
-    properties: {role: null, align: center, tooltip: '', border: '', foreground: '',
-      visible: true, text: ☀️, font_size: 48, font: '', spacing_above: none, icon_align: left,
-      spacing_below: none, italic: false, background: '', bold: false, underline: false,
-      icon: ''}
+    properties: {align: center, background: '', bold: true, border: '', font: '', font_size: 18, foreground: '', icon: '', icon_align: left, italic: false, role: null, spacing_above: small, spacing_below: none, text: Friday, tooltip: '', underline: false, visible: true}
+    type: Label
+  - layout_properties: {grid_position: 'NMXPIF,OZEQMK'}
     name: weather_icon_label
-    layout_properties: {grid_position: 'NMXPIF,OZEQMK'}
-  - type: Label
-    properties: {role: null, align: center, tooltip: '', border: '', foreground: '',
-      visible: true, text: 75°F, font_size: 24, font: '', spacing_above: none, icon_align: left,
-      spacing_below: none, italic: false, background: '', bold: true, underline: false,
-      icon: ''}
+    properties: {align: center, background: '', bold: false, border: '', font: '', font_size: 48, foreground: '', icon: '', icon_align: left, italic: false, role: null, spacing_above: none, spacing_below: none, text: ☀️, tooltip: '', underline: false, visible: true}
+    type: Label
+  - layout_properties: {grid_position: 'VHDQYP,WPNTZH'}
     name: temp_label
-    layout_properties: {grid_position: 'VHDQYP,WPNTZH'}
-  - type: Label
-    properties: {role: null, align: center, tooltip: '', border: '', foreground: '#666666',
-      visible: true, text: 'Low: 55°F', font_size: 12, font: '', spacing_above: none,
-      icon_align: left, spacing_below: small, italic: false, background: '', bold: false,
-      underline: false, icon: ''}
+    properties: {align: center, background: '', bold: true, border: '', font: '', font_size: 24, foreground: '', icon: '', icon_align: left, italic: false, role: null, spacing_above: none, spacing_below: none, text: 75°F, tooltip: '', underline: false, visible: true}
+    type: Label
+  - layout_properties: {grid_position: 'QBSPUD,XBKXQB'}
     name: temp_range_label
-    layout_properties: {grid_position: 'QBSPUD,XBKXQB'}
-  - type: Label
-    properties: {role: null, align: center, tooltip: '', border: '', foreground: '',
-      visible: true, text: Partly Cloudy, font_size: 14, font: '', spacing_above: none,
-      icon_align: left, spacing_below: small, italic: false, background: '', bold: false,
-      underline: false, icon: ''}
+    properties: {align: center, background: '', bold: false, border: '', font: '', font_size: 12, foreground: '#666666', icon: '', icon_align: left, italic: false, role: null, spacing_above: none, spacing_below: small, text: 'Low: 55°F', tooltip: '', underline: false, visible: true}
+    type: Label
+  - layout_properties: {grid_position: 'HBLFLF,IHNLSC'}
     name: conditions_label
-    layout_properties: {grid_position: 'HBLFLF,IHNLSC'}
-  - type: FlowPanel
-    properties: {role: null, spacing: medium, align: center, tooltip: '', border: '',
-      foreground: '', visible: true, spacing_above: small, spacing_below: small,
-      background: ''}
-    name: flow_panel_1
-    layout_properties: {grid_position: 'NUJZXS,IGZJZQ'}
-    components:
-    - type: Label
-      properties: {role: null, align: left, tooltip: '', border: '', foreground: '#4CAF50',
-        visible: true, text: 💧 20%, font_size: 12, font: '', spacing_above: small,
-        icon_align: left, spacing_below: small, italic: false, background: '', bold: false,
-        underline: false, icon: ''}
+    properties: {align: center, background: '', bold: false, border: '', font: '', font_size: 14, foreground: '', icon: '', icon_align: left, italic: false, role: null, spacing_above: none, spacing_below: small, text: Partly Cloudy, tooltip: '', underline: false, visible: true}
+    type: Label
+  - components:
+    - layout_properties: {width: null}
       name: precip_label
-      layout_properties: {width: null}
-    - type: Label
-      properties: {role: null, align: left, tooltip: '', border: '', foreground: '#666666',
-        visible: true, text: 💨 10 mph, font_size: 12, font: '', spacing_above: small,
-        icon_align: left, spacing_below: small, italic: false, background: '', bold: false,
-        underline: false, icon: ''}
+      properties: {align: left, background: '', bold: false, border: '', font: '', font_size: 12, foreground: '#4CAF50', icon: '', icon_align: left, italic: false, role: null, spacing_above: small, spacing_below: small, text: 💧 20%, tooltip: '', underline: false, visible: true}
+      type: Label
+    - layout_properties: {width: null}
       name: wind_label
-      layout_properties: {width: null}
+      properties: {align: left, background: '', bold: false, border: '', font: '', font_size: 12, foreground: '#666666', icon: '', icon_align: left, italic: false, role: null, spacing_above: small, spacing_below: small, text: 💨 10 mph, tooltip: '', underline: false, visible: true}
+      type: Label
+    layout_properties: {grid_position: 'NUJZXS,IGZJZQ'}
+    name: flow_panel_1
+    properties: {align: center, background: '', border: '', foreground: '', role: null, spacing: medium, spacing_above: small, spacing_below: small, tooltip: '', visible: true}
+    type: FlowPanel
+  layout_properties: {grid_position: 'QPZWNQ,KGUKKH'}
+  name: card_1
+  properties: {auto_expand: true, background: '#E3F2FD', border: '', col_spacing: medium, col_widths: '{}', foreground: '', role: null, spacing_above: small, spacing_below: small, tooltip: '', visible: true, wrap_on: mobile}
+  type: Card
+container:
+  properties: {background: '', border: '', col_spacing: medium, col_widths: '{}', foreground: '', role: card, spacing_above: small, spacing_below: small, tooltip: '', visible: true, wrap_on: mobile}
+  type: ColumnPanel
 is_package: true
-

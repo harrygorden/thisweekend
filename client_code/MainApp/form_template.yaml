@@ -1,392 +1,226 @@
-container:
-  type: ColumnPanel
-  properties: {role: null, tooltip: '', border: '', foreground: '', visible: true,
-    wrap_on: mobile, col_spacing: medium, spacing_above: small, col_widths: '{}',
-    spacing_below: small, background: ''}
 components:
-# Header Section
-- type: ColumnPanel
-  properties: {role: elevated-card, tooltip: '', border: '', foreground: '', visible: true,
-    wrap_on: mobile, col_spacing: medium, spacing_above: none, col_widths: '{}',
-    spacing_below: small, background: '#1976D2'}
-  name: header_panel
-  layout_properties: {grid_position: 'AXVPRR,MJIQHQ'}
-  components:
-  - type: FlowPanel
-    properties: {role: null, spacing: medium, align: left, tooltip: '', border: '',
-      foreground: '', visible: true, spacing_above: small, spacing_below: small,
-      background: ''}
-    name: header_flow
-    layout_properties: {grid_position: 'SLUHSV,HFQBXB'}
-    components:
-    - type: Label
-      properties: {role: null, align: left, tooltip: '', border: '', foreground: white,
-        visible: true, text: 🎉 This Weekend, font_size: 32, font: '', spacing_above: small,
-        icon_align: left, spacing_below: small, italic: false, background: '', bold: true,
-        underline: false, icon: ''}
+- components:
+  - components:
+    - layout_properties: {expand: true, width: null}
       name: title_label
-      layout_properties: {width: null, expand: true}
-    - type: Button
-      properties: {role: outlined-button, align: center, tooltip: Refresh data, border: '',
-        enabled: true, foreground: white, visible: true, text: '', font_size: null,
-        font: '', spacing_above: small, icon_align: left, spacing_below: small,
-        italic: false, background: '', bold: false, underline: false, icon: 'fa:refresh'}
+      properties: {align: left, background: '', bold: true, border: '', font: '', font_size: 32, foreground: white, icon: '', icon_align: left, italic: false, role: null, spacing_above: small, spacing_below: small, text: 🎉 This Weekend, tooltip: '', underline: false, visible: true}
+      type: Label
+    - event_bindings: {click: refresh_button_click}
+      layout_properties: {width: null}
       name: refresh_button
+      properties: {align: center, background: '', bold: false, border: '', enabled: true, font: '', font_size: null, foreground: white, icon: 'fa:refresh', icon_align: left, italic: false, role: outlined-button, spacing_above: small, spacing_below: small, text: '', tooltip: Refresh data, underline: false, visible: true}
+      type: Button
+    - event_bindings: {click: itinerary_button_click}
       layout_properties: {width: null}
-      event_bindings: {click: refresh_button_click}
-    - type: Button
-      properties: {role: filled-button, align: center, tooltip: View your saved events,
-        border: '', enabled: true, foreground: '', visible: true, text: My Itinerary,
-        font_size: null, font: '', spacing_above: small, icon_align: left, spacing_below: small,
-        italic: false, background: '#4CAF50', bold: false, underline: false, icon: 'fa:calendar-o'}
       name: itinerary_button
-      layout_properties: {width: null}
-      event_bindings: {click: itinerary_button_click}
-
-# Loading indicator
-- type: Label
-  properties: {role: null, align: center, tooltip: '', border: '', foreground: '#666666',
-    visible: false, text: Loading data..., font_size: 14, font: '', spacing_above: small,
-    icon_align: left, spacing_below: small, italic: true, background: '', bold: false,
-    underline: false, icon: 'fa:spinner fa-spin'}
+      properties: {align: center, background: '#4CAF50', bold: false, border: '', enabled: true, font: '', font_size: null, foreground: '', icon: 'fa:calendar-o', icon_align: left, italic: false, role: filled-button, spacing_above: small, spacing_below: small, text: My Itinerary, tooltip: View your saved events, underline: false, visible: true}
+      type: Button
+    layout_properties: {grid_position: 'SLUHSV,HFQBXB'}
+    name: header_flow
+    properties: {align: left, background: '', border: '', foreground: '', role: null, spacing: medium, spacing_above: small, spacing_below: small, tooltip: '', visible: true}
+    type: FlowPanel
+  layout_properties: {grid_position: 'AXVPRR,MJIQHQ'}
+  name: header_panel
+  properties: {background: '#1976D2', border: '', col_spacing: medium, col_widths: '{}', foreground: '', role: elevated-card, spacing_above: none, spacing_below: small, tooltip: '', visible: true, wrap_on: mobile}
+  type: ColumnPanel
+- layout_properties: {grid_position: 'CIBMEP,DVTFXR'}
   name: loading_label
-  layout_properties: {grid_position: 'CIBMEP,DVTFXR'}
-
-# Weather Section
-- type: ColumnPanel
-  properties: {role: card, tooltip: '', border: '', foreground: '', visible: true,
-    wrap_on: mobile, col_spacing: medium, spacing_above: small, col_widths: '{}',
-    spacing_below: small, background: '#FAFAFA'}
-  name: weather_section
-  layout_properties: {grid_position: 'TSJLXJ,IQVMUE'}
-  components:
-  - type: Label
-    properties: {role: headline, align: left, tooltip: '', border: '', foreground: '',
-      visible: true, text: Weekend Weather Forecast, font_size: 20, font: '', spacing_above: small,
-      icon_align: left, spacing_below: none, italic: false, background: '', bold: true,
-      underline: false, icon: 'fa:sun-o'}
+  properties: {align: center, background: '', bold: false, border: '', font: '', font_size: 14, foreground: '#666666', icon: 'fa:spinner fa-spin', icon_align: left, italic: true, role: null, spacing_above: small, spacing_below: small, text: Loading data..., tooltip: '', underline: false, visible: false}
+  type: Label
+- components:
+  - layout_properties: {grid_position: 'EWKQTQ,CFBZSV'}
     name: weather_title
-    layout_properties: {grid_position: 'EWKQTQ,CFBZSV'}
-  - type: Label
-    properties: {role: null, align: left, tooltip: '', border: '', foreground: '#666666',
-      visible: true, text: 'Weekend Outlook: Loading...', font_size: 14, font: '',
-      spacing_above: none, icon_align: left, spacing_below: small, italic: false,
-      background: '', bold: false, underline: false, icon: ''}
+    properties: {align: left, background: '', bold: true, border: '', font: '', font_size: 20, foreground: '', icon: 'fa:sun-o', icon_align: left, italic: false, role: headline, spacing_above: small, spacing_below: none, text: Weekend Weather Forecast, tooltip: '', underline: false, visible: true}
+    type: Label
+  - layout_properties: {grid_position: 'CMQHOI,WFCMVC'}
     name: weather_summary_label
-    layout_properties: {grid_position: 'CMQHOI,WFCMVC'}
-  - type: FlowPanel
-    properties: {role: null, spacing: medium, align: left, tooltip: '', border: '',
-      foreground: '', visible: true, spacing_above: small, spacing_below: small,
-      background: ''}
+    properties: {align: left, background: '', bold: false, border: '', font: '', font_size: 14, foreground: '#666666', icon: '', icon_align: left, italic: false, role: null, spacing_above: none, spacing_below: small, text: 'Weekend Outlook: Loading...', tooltip: '', underline: false, visible: true}
+    type: Label
+  - layout_properties: {grid_position: 'NQZQQU,KDAJQJ'}
     name: weather_container
-    layout_properties: {grid_position: 'NQZQQU,KDAJQJ'}
-
-# Main Content Section (2 columns: filters + events)
-- type: GridPanel
-  properties:
-    role: null
-    tooltip: ''
-    border: ''
-    foreground: ''
-    visible: true
-    spacing_above: small
-    spacing_below: small
-    background: ''
-  name: main_grid
-  layout_properties: {grid_position: 'PKXOQA,HTAECN'}
-  components:
-  # LEFT COLUMN - Filter Panel
-  - type: ColumnPanel
-    properties: {role: card, tooltip: '', border: '', foreground: '', visible: true,
-      wrap_on: mobile, col_spacing: medium, spacing_above: small, col_widths: '{}',
-      spacing_below: small, background: ''}
-    name: filter_panel
-    layout_properties: {row: WKRBKR, width_xs: 12, col_xs: 0, width_sm: 4, col_sm: 0}
-    components:
-    - type: Label
-      properties: {role: headline, align: left, tooltip: '', border: '', foreground: '',
-        visible: true, text: 🔍 Filters, font_size: 18, font: '', spacing_above: small,
-        icon_align: left, spacing_below: small, italic: false, background: '', bold: true,
-        underline: false, icon: ''}
+    properties: {align: left, background: '', border: '', foreground: '', role: null, spacing: medium, spacing_above: small, spacing_below: small, tooltip: '', visible: true}
+    type: FlowPanel
+  layout_properties: {grid_position: 'TSJLXJ,IQVMUE'}
+  name: weather_section
+  properties: {background: '#FAFAFA', border: '', col_spacing: medium, col_widths: '{}', foreground: '', role: card, spacing_above: small, spacing_below: small, tooltip: '', visible: true, wrap_on: mobile}
+  type: ColumnPanel
+- components:
+  - components:
+    - layout_properties: {grid_position: 'GMXDQQ,NHHXCE'}
       name: filters_title
-      layout_properties: {grid_position: 'GMXDQQ,NHHXCE'}
-    
-    # Search
-    - type: TextBox
-      properties: {role: null, align: left, tooltip: Search events, border: '', enabled: true,
-        foreground: '', visible: true, text: '', font_size: null, font: '', placeholder: 'Search events...',
-        spacing_above: small, type: text, spacing_below: small, italic: false, background: '',
-        bold: false, underline: false}
-      name: search_box
+      properties: {align: left, background: '', bold: true, border: '', font: '', font_size: 18, foreground: '', icon: '', icon_align: left, italic: false, role: headline, spacing_above: small, spacing_below: small, text: 🔍 Filters, tooltip: '', underline: false, visible: true}
+      type: Label
+    - event_bindings: {change: search_box_change, pressed_enter: search_box_pressed_enter}
       layout_properties: {grid_position: 'TQSNXO,OKRCPC'}
-      event_bindings: {change: search_box_change, pressed_enter: search_box_pressed_enter}
-    
-    # Days filter
-    - type: Label
-      properties: {role: null, align: left, tooltip: '', border: '', foreground: '#1976D2',
-        visible: true, text: Day, font_size: 14, font: '', spacing_above: small,
-        icon_align: left, spacing_below: none, italic: false, background: '', bold: true,
-        underline: false, icon: 'fa:calendar'}
+      name: search_box
+      properties: {align: left, background: '', bold: false, border: '', enabled: true, font: '', font_size: null, foreground: '', italic: false, placeholder: Search events..., role: null, spacing_above: small, spacing_below: small, text: '', tooltip: Search events, type: text, underline: false, visible: true}
+      type: TextBox
+    - layout_properties: {grid_position: 'XNQRCO,AVDLGK'}
       name: day_filter_label
-      layout_properties: {grid_position: 'XNQRCO,AVDLGK'}
-    - type: CheckBox
-      properties: {role: null, allow_indeterminate: false, align: left, tooltip: '',
-        enabled: true, foreground: '', visible: true, text: Friday, font_size: null,
-        font: '', checked: false, spacing_above: none, spacing_below: none, italic: false,
-        background: '', bold: false, underline: false}
-      name: friday_check
+      properties: {align: left, background: '', bold: true, border: '', font: '', font_size: 14, foreground: '#1976D2', icon: 'fa:calendar', icon_align: left, italic: false, role: null, spacing_above: small, spacing_below: none, text: Day, tooltip: '', underline: false, visible: true}
+      type: Label
+    - event_bindings: {change: friday_check_change}
       layout_properties: {grid_position: 'PZFXLA,DSFPFX'}
-      event_bindings: {change: friday_check_change}
-    - type: CheckBox
-      properties: {role: null, allow_indeterminate: false, align: left, tooltip: '',
-        enabled: true, foreground: '', visible: true, text: Saturday, font_size: null,
-        font: '', checked: false, spacing_above: none, spacing_below: none, italic: false,
-        background: '', bold: false, underline: false}
-      name: saturday_check
+      name: friday_check
+      properties: {align: left, allow_indeterminate: false, background: '', bold: false, checked: false, enabled: true, font: '', font_size: null, foreground: '', italic: false, role: null, spacing_above: none, spacing_below: none, text: Friday, tooltip: '', underline: false, visible: true}
+      type: CheckBox
+    - event_bindings: {change: saturday_check_change}
       layout_properties: {grid_position: 'NSDQZG,BHCJFM'}
-      event_bindings: {change: saturday_check_change}
-    - type: CheckBox
-      properties: {role: null, allow_indeterminate: false, align: left, tooltip: '',
-        enabled: true, foreground: '', visible: true, text: Sunday, font_size: null,
-        font: '', checked: false, spacing_above: none, spacing_below: small, italic: false,
-        background: '', bold: false, underline: false}
-      name: sunday_check
+      name: saturday_check
+      properties: {align: left, allow_indeterminate: false, background: '', bold: false, checked: false, enabled: true, font: '', font_size: null, foreground: '', italic: false, role: null, spacing_above: none, spacing_below: none, text: Saturday, tooltip: '', underline: false, visible: true}
+      type: CheckBox
+    - event_bindings: {change: sunday_check_change}
       layout_properties: {grid_position: 'CBOJCA,YRDKRB'}
-      event_bindings: {change: sunday_check_change}
-    
-    # Cost filter
-    - type: Label
-      properties: {role: null, align: left, tooltip: '', border: '', foreground: '#1976D2',
-        visible: true, text: Cost, font_size: 14, font: '', spacing_above: small,
-        icon_align: left, spacing_below: none, italic: false, background: '', bold: true,
-        underline: false, icon: 'fa:dollar'}
+      name: sunday_check
+      properties: {align: left, allow_indeterminate: false, background: '', bold: false, checked: false, enabled: true, font: '', font_size: null, foreground: '', italic: false, role: null, spacing_above: none, spacing_below: small, text: Sunday, tooltip: '', underline: false, visible: true}
+      type: CheckBox
+    - layout_properties: {grid_position: 'RPXLTN,GTLQID'}
       name: cost_filter_label
-      layout_properties: {grid_position: 'RPXLTN,GTLQID'}
-    - type: CheckBox
-      properties: {role: null, allow_indeterminate: false, align: left, tooltip: '',
-        enabled: true, foreground: '', visible: true, text: Free, font_size: null,
-        font: '', checked: false, spacing_above: none, spacing_below: none, italic: false,
-        background: '', bold: false, underline: false}
-      name: cost_free_check
+      properties: {align: left, background: '', bold: true, border: '', font: '', font_size: 14, foreground: '#1976D2', icon: 'fa:dollar', icon_align: left, italic: false, role: null, spacing_above: small, spacing_below: none, text: Cost, tooltip: '', underline: false, visible: true}
+      type: Label
+    - event_bindings: {change: cost_free_check_change}
       layout_properties: {grid_position: 'OKQXVP,KDKFCL'}
-      event_bindings: {change: cost_free_check_change}
-    - type: CheckBox
-      properties: {role: null, allow_indeterminate: false, align: left, tooltip: '',
-        enabled: true, foreground: '', visible: true, text: $ (Under $20), font_size: null,
-        font: '', checked: false, spacing_above: none, spacing_below: none, italic: false,
-        background: '', bold: false, underline: false}
-      name: cost_1_check
+      name: cost_free_check
+      properties: {align: left, allow_indeterminate: false, background: '', bold: false, checked: false, enabled: true, font: '', font_size: null, foreground: '', italic: false, role: null, spacing_above: none, spacing_below: none, text: Free, tooltip: '', underline: false, visible: true}
+      type: CheckBox
+    - event_bindings: {change: cost_1_check_change}
       layout_properties: {grid_position: 'LGKRLR,RTVWNM'}
-      event_bindings: {change: cost_1_check_change}
-    - type: CheckBox
-      properties: {role: null, allow_indeterminate: false, align: left, tooltip: '',
-        enabled: true, foreground: '', visible: true, text: $$ ($20-50), font_size: null,
-        font: '', checked: false, spacing_above: none, spacing_below: none, italic: false,
-        background: '', bold: false, underline: false}
-      name: cost_2_check
+      name: cost_1_check
+      properties: {align: left, allow_indeterminate: false, background: '', bold: false, checked: false, enabled: true, font: '', font_size: null, foreground: '', italic: false, role: null, spacing_above: none, spacing_below: none, text: $ (Under $20), tooltip: '', underline: false, visible: true}
+      type: CheckBox
+    - event_bindings: {change: cost_2_check_change}
       layout_properties: {grid_position: 'AMCVPX,YQXYKH'}
-      event_bindings: {change: cost_2_check_change}
-    - type: CheckBox
-      properties: {role: null, allow_indeterminate: false, align: left, tooltip: '',
-        enabled: true, foreground: '', visible: true, text: $$$ ($50-100), font_size: null,
-        font: '', checked: false, spacing_above: none, spacing_below: none, italic: false,
-        background: '', bold: false, underline: false}
-      name: cost_3_check
+      name: cost_2_check
+      properties: {align: left, allow_indeterminate: false, background: '', bold: false, checked: false, enabled: true, font: '', font_size: null, foreground: '', italic: false, role: null, spacing_above: none, spacing_below: none, text: $$ ($20-50), tooltip: '', underline: false, visible: true}
+      type: CheckBox
+    - event_bindings: {change: cost_3_check_change}
       layout_properties: {grid_position: 'WRZBJN,VABSHP'}
-      event_bindings: {change: cost_3_check_change}
-    - type: CheckBox
-      properties: {role: null, allow_indeterminate: false, align: left, tooltip: '',
-        enabled: true, foreground: '', visible: true, text: $$$$ ($100+), font_size: null,
-        font: '', checked: false, spacing_above: none, spacing_below: small, italic: false,
-        background: '', bold: false, underline: false}
-      name: cost_4_check
+      name: cost_3_check
+      properties: {align: left, allow_indeterminate: false, background: '', bold: false, checked: false, enabled: true, font: '', font_size: null, foreground: '', italic: false, role: null, spacing_above: none, spacing_below: none, text: $$$ ($50-100), tooltip: '', underline: false, visible: true}
+      type: CheckBox
+    - event_bindings: {change: cost_4_check_change}
       layout_properties: {grid_position: 'LWZQLM,JDKQEY'}
-      event_bindings: {change: cost_4_check_change}
-    
-    # Category filter
-    - type: Label
-      properties: {role: null, align: left, tooltip: '', border: '', foreground: '#1976D2',
-        visible: true, text: Category, font_size: 14, font: '', spacing_above: small,
-        icon_align: left, spacing_below: none, italic: false, background: '', bold: true,
-        underline: false, icon: 'fa:tags'}
+      name: cost_4_check
+      properties: {align: left, allow_indeterminate: false, background: '', bold: false, checked: false, enabled: true, font: '', font_size: null, foreground: '', italic: false, role: null, spacing_above: none, spacing_below: small, text: $$$$ ($100+), tooltip: '', underline: false, visible: true}
+      type: CheckBox
+    - layout_properties: {grid_position: 'DQYSXU,JIRQJL'}
       name: category_filter_label
-      layout_properties: {grid_position: 'DQYSXU,JIRQJL'}
-    - type: CheckBox
-      properties: {role: null, allow_indeterminate: false, align: left, tooltip: '',
-        enabled: true, foreground: '', visible: true, text: Arts, font_size: null,
-        font: '', checked: false, spacing_above: none, spacing_below: none, italic: false,
-        background: '', bold: false, underline: false}
-      name: cat_arts_check
+      properties: {align: left, background: '', bold: true, border: '', font: '', font_size: 14, foreground: '#1976D2', icon: 'fa:tags', icon_align: left, italic: false, role: null, spacing_above: small, spacing_below: none, text: Category, tooltip: '', underline: false, visible: true}
+      type: Label
+    - event_bindings: {change: cat_arts_check_change}
       layout_properties: {grid_position: 'HQXNWH,NFUNMB'}
-      event_bindings: {change: cat_arts_check_change}
-    - type: CheckBox
-      properties: {role: null, allow_indeterminate: false, align: left, tooltip: '',
-        enabled: true, foreground: '', visible: true, text: Music, font_size: null,
-        font: '', checked: false, spacing_above: none, spacing_below: none, italic: false,
-        background: '', bold: false, underline: false}
-      name: cat_music_check
+      name: cat_arts_check
+      properties: {align: left, allow_indeterminate: false, background: '', bold: false, checked: false, enabled: true, font: '', font_size: null, foreground: '', italic: false, role: null, spacing_above: none, spacing_below: none, text: Arts, tooltip: '', underline: false, visible: true}
+      type: CheckBox
+    - event_bindings: {change: cat_music_check_change}
       layout_properties: {grid_position: 'EGNMTM,TSJFIO'}
-      event_bindings: {change: cat_music_check_change}
-    - type: CheckBox
-      properties: {role: null, allow_indeterminate: false, align: left, tooltip: '',
-        enabled: true, foreground: '', visible: true, text: Sports, font_size: null,
-        font: '', checked: false, spacing_above: none, spacing_below: none, italic: false,
-        background: '', bold: false, underline: false}
-      name: cat_sports_check
+      name: cat_music_check
+      properties: {align: left, allow_indeterminate: false, background: '', bold: false, checked: false, enabled: true, font: '', font_size: null, foreground: '', italic: false, role: null, spacing_above: none, spacing_below: none, text: Music, tooltip: '', underline: false, visible: true}
+      type: CheckBox
+    - event_bindings: {change: cat_sports_check_change}
       layout_properties: {grid_position: 'UQHBYY,VKZGKT'}
-      event_bindings: {change: cat_sports_check_change}
-    - type: CheckBox
-      properties: {role: null, allow_indeterminate: false, align: left, tooltip: '',
-        enabled: true, foreground: '', visible: true, text: Food & Drink, font_size: null,
-        font: '', checked: false, spacing_above: none, spacing_below: none, italic: false,
-        background: '', bold: false, underline: false}
-      name: cat_food_check
+      name: cat_sports_check
+      properties: {align: left, allow_indeterminate: false, background: '', bold: false, checked: false, enabled: true, font: '', font_size: null, foreground: '', italic: false, role: null, spacing_above: none, spacing_below: none, text: Sports, tooltip: '', underline: false, visible: true}
+      type: CheckBox
+    - event_bindings: {change: cat_food_check_change}
       layout_properties: {grid_position: 'YQBGHF,BLSVKL'}
-      event_bindings: {change: cat_food_check_change}
-    - type: CheckBox
-      properties: {role: null, allow_indeterminate: false, align: left, tooltip: '',
-        enabled: true, foreground: '', visible: true, text: Outdoor Activities, font_size: null,
-        font: '', checked: false, spacing_above: none, spacing_below: none, italic: false,
-        background: '', bold: false, underline: false}
-      name: cat_outdoor_check
+      name: cat_food_check
+      properties: {align: left, allow_indeterminate: false, background: '', bold: false, checked: false, enabled: true, font: '', font_size: null, foreground: '', italic: false, role: null, spacing_above: none, spacing_below: none, text: Food & Drink, tooltip: '', underline: false, visible: true}
+      type: CheckBox
+    - event_bindings: {change: cat_outdoor_check_change}
       layout_properties: {grid_position: 'WBIJWW,GAWPTW'}
-      event_bindings: {change: cat_outdoor_check_change}
-    - type: CheckBox
-      properties: {role: null, allow_indeterminate: false, align: left, tooltip: '',
-        enabled: true, foreground: '', visible: true, text: Cultural Events, font_size: null,
-        font: '', checked: false, spacing_above: none, spacing_below: none, italic: false,
-        background: '', bold: false, underline: false}
-      name: cat_cultural_check
+      name: cat_outdoor_check
+      properties: {align: left, allow_indeterminate: false, background: '', bold: false, checked: false, enabled: true, font: '', font_size: null, foreground: '', italic: false, role: null, spacing_above: none, spacing_below: none, text: Outdoor Activities, tooltip: '', underline: false, visible: true}
+      type: CheckBox
+    - event_bindings: {change: cat_cultural_check_change}
       layout_properties: {grid_position: 'MXOGDQ,XZDOQD'}
-      event_bindings: {change: cat_cultural_check_change}
-    - type: CheckBox
-      properties: {role: null, allow_indeterminate: false, align: left, tooltip: '',
-        enabled: true, foreground: '', visible: true, text: Theater/Performance, font_size: null,
-        font: '', checked: false, spacing_above: none, spacing_below: none, italic: false,
-        background: '', bold: false, underline: false}
-      name: cat_theater_check
+      name: cat_cultural_check
+      properties: {align: left, allow_indeterminate: false, background: '', bold: false, checked: false, enabled: true, font: '', font_size: null, foreground: '', italic: false, role: null, spacing_above: none, spacing_below: none, text: Cultural Events, tooltip: '', underline: false, visible: true}
+      type: CheckBox
+    - event_bindings: {change: cat_theater_check_change}
       layout_properties: {grid_position: 'XXHDTX,UZHPZF'}
-      event_bindings: {change: cat_theater_check_change}
-    - type: CheckBox
-      properties: {role: null, allow_indeterminate: false, align: left, tooltip: '',
-        enabled: true, foreground: '', visible: true, text: Family/Kids, font_size: null,
-        font: '', checked: false, spacing_above: none, spacing_below: none, italic: false,
-        background: '', bold: false, underline: false}
-      name: cat_family_check
+      name: cat_theater_check
+      properties: {align: left, allow_indeterminate: false, background: '', bold: false, checked: false, enabled: true, font: '', font_size: null, foreground: '', italic: false, role: null, spacing_above: none, spacing_below: none, text: Theater/Performance, tooltip: '', underline: false, visible: true}
+      type: CheckBox
+    - event_bindings: {change: cat_family_check_change}
       layout_properties: {grid_position: 'ZKQXLX,NLZVQB'}
-      event_bindings: {change: cat_family_check_change}
-    - type: CheckBox
-      properties: {role: null, allow_indeterminate: false, align: left, tooltip: '',
-        enabled: true, foreground: '', visible: true, text: Nightlife, font_size: null,
-        font: '', checked: false, spacing_above: none, spacing_below: small, italic: false,
-        background: '', bold: false, underline: false}
-      name: cat_nightlife_check
+      name: cat_family_check
+      properties: {align: left, allow_indeterminate: false, background: '', bold: false, checked: false, enabled: true, font: '', font_size: null, foreground: '', italic: false, role: null, spacing_above: none, spacing_below: none, text: Family/Kids, tooltip: '', underline: false, visible: true}
+      type: CheckBox
+    - event_bindings: {change: cat_nightlife_check_change}
       layout_properties: {grid_position: 'KGXBRK,KTMIBR'}
-      event_bindings: {change: cat_nightlife_check_change}
-    
-    # Audience filter
-    - type: Label
-      properties: {role: null, align: left, tooltip: '', border: '', foreground: '#1976D2',
-        visible: true, text: Audience, font_size: 14, font: '', spacing_above: small,
-        icon_align: left, spacing_below: none, italic: false, background: '', bold: true,
-        underline: false, icon: 'fa:users'}
+      name: cat_nightlife_check
+      properties: {align: left, allow_indeterminate: false, background: '', bold: false, checked: false, enabled: true, font: '', font_size: null, foreground: '', italic: false, role: null, spacing_above: none, spacing_below: small, text: Nightlife, tooltip: '', underline: false, visible: true}
+      type: CheckBox
+    - layout_properties: {grid_position: 'QZQSYV,VUJZOO'}
       name: audience_filter_label
-      layout_properties: {grid_position: 'QZQSYV,VUJZOO'}
-    - type: CheckBox
-      properties: {role: null, allow_indeterminate: false, align: left, tooltip: '',
-        enabled: true, foreground: '', visible: true, text: Adults, font_size: null,
-        font: '', checked: false, spacing_above: none, spacing_below: none, italic: false,
-        background: '', bold: false, underline: false}
-      name: aud_adults_check
+      properties: {align: left, background: '', bold: true, border: '', font: '', font_size: 14, foreground: '#1976D2', icon: 'fa:users', icon_align: left, italic: false, role: null, spacing_above: small, spacing_below: none, text: Audience, tooltip: '', underline: false, visible: true}
+      type: Label
+    - event_bindings: {change: aud_adults_check_change}
       layout_properties: {grid_position: 'ZLSQXL,IOEGFU'}
-      event_bindings: {change: aud_adults_check_change}
-    - type: CheckBox
-      properties: {role: null, allow_indeterminate: false, align: left, tooltip: '',
-        enabled: true, foreground: '', visible: true, text: Family-Friendly, font_size: null,
-        font: '', checked: false, spacing_above: none, spacing_below: none, italic: false,
-        background: '', bold: false, underline: false}
-      name: aud_family_check
+      name: aud_adults_check
+      properties: {align: left, allow_indeterminate: false, background: '', bold: false, checked: false, enabled: true, font: '', font_size: null, foreground: '', italic: false, role: null, spacing_above: none, spacing_below: none, text: Adults, tooltip: '', underline: false, visible: true}
+      type: CheckBox
+    - event_bindings: {change: aud_family_check_change}
       layout_properties: {grid_position: 'CDSRQY,BTEDSU'}
-      event_bindings: {change: aud_family_check_change}
-    - type: CheckBox
-      properties: {role: null, allow_indeterminate: false, align: left, tooltip: '',
-        enabled: true, foreground: '', visible: true, text: All Ages, font_size: null,
-        font: '', checked: false, spacing_above: none, spacing_below: small, italic: false,
-        background: '', bold: false, underline: false}
-      name: aud_all_check
+      name: aud_family_check
+      properties: {align: left, allow_indeterminate: false, background: '', bold: false, checked: false, enabled: true, font: '', font_size: null, foreground: '', italic: false, role: null, spacing_above: none, spacing_below: none, text: Family-Friendly, tooltip: '', underline: false, visible: true}
+      type: CheckBox
+    - event_bindings: {change: aud_all_check_change}
       layout_properties: {grid_position: 'VLODXF,LKNGWS'}
-      event_bindings: {change: aud_all_check_change}
-    
-    # Venue Type filter
-    - type: Label
-      properties: {role: null, align: left, tooltip: '', border: '', foreground: '#1976D2',
-        visible: true, text: Venue Type, font_size: 14, font: '', spacing_above: small,
-        icon_align: left, spacing_below: none, italic: false, background: '', bold: true,
-        underline: false, icon: 'fa:building'}
+      name: aud_all_check
+      properties: {align: left, allow_indeterminate: false, background: '', bold: false, checked: false, enabled: true, font: '', font_size: null, foreground: '', italic: false, role: null, spacing_above: none, spacing_below: small, text: All Ages, tooltip: '', underline: false, visible: true}
+      type: CheckBox
+    - layout_properties: {grid_position: 'JHWPRB,YYGBFJ'}
       name: venue_filter_label
-      layout_properties: {grid_position: 'JHWPRB,YYGBFJ'}
-    - type: CheckBox
-      properties: {role: null, allow_indeterminate: false, align: left, tooltip: '',
-        enabled: true, foreground: '', visible: true, text: Indoor, font_size: null,
-        font: '', checked: true, spacing_above: none, spacing_below: none, italic: false,
-        background: '', bold: false, underline: false}
-      name: indoor_check
+      properties: {align: left, background: '', bold: true, border: '', font: '', font_size: 14, foreground: '#1976D2', icon: 'fa:building', icon_align: left, italic: false, role: null, spacing_above: small, spacing_below: none, text: Venue Type, tooltip: '', underline: false, visible: true}
+      type: Label
+    - event_bindings: {change: indoor_check_change}
       layout_properties: {grid_position: 'SZZYRP,NKRFGD'}
-      event_bindings: {change: indoor_check_change}
-    - type: CheckBox
-      properties: {role: null, allow_indeterminate: false, align: left, tooltip: '',
-        enabled: true, foreground: '', visible: true, text: Outdoor, font_size: null,
-        font: '', checked: true, spacing_above: none, spacing_below: small, italic: false,
-        background: '', bold: false, underline: false}
-      name: outdoor_check
+      name: indoor_check
+      properties: {align: left, allow_indeterminate: false, background: '', bold: false, checked: true, enabled: true, font: '', font_size: null, foreground: '', italic: false, role: null, spacing_above: none, spacing_below: none, text: Indoor, tooltip: '', underline: false, visible: true}
+      type: CheckBox
+    - event_bindings: {change: outdoor_check_change}
       layout_properties: {grid_position: 'PMVXHO,YJWSLJ'}
-      event_bindings: {change: outdoor_check_change}
-    
-    # Clear filters button
-    - type: Button
-      properties: {role: outlined-button, align: center, tooltip: '', border: '',
-        enabled: true, foreground: '', visible: true, text: Clear All Filters, font_size: null,
-        font: '', spacing_above: small, icon_align: left, spacing_below: small,
-        italic: false, background: '', bold: false, underline: false, icon: 'fa:times'}
-      name: clear_filters_button
+      name: outdoor_check
+      properties: {align: left, allow_indeterminate: false, background: '', bold: false, checked: true, enabled: true, font: '', font_size: null, foreground: '', italic: false, role: null, spacing_above: none, spacing_below: small, text: Outdoor, tooltip: '', underline: false, visible: true}
+      type: CheckBox
+    - event_bindings: {click: clear_filters_button_click}
       layout_properties: {grid_position: 'HBMOCQ,KPWFDZ'}
-      event_bindings: {click: clear_filters_button_click}
-  
-  # RIGHT COLUMN - Events Panel
-  - type: ColumnPanel
-    properties: {role: card, tooltip: '', border: '', foreground: '', visible: true,
-      wrap_on: mobile, col_spacing: medium, spacing_above: small, col_widths: '{}',
-      spacing_below: small, background: ''}
-    name: events_panel
-    layout_properties: {row: WKRBKR, width_xs: 12, col_xs: 0, width_sm: 8, col_sm: 4}
-    components:
-    - type: FlowPanel
-      properties: {role: null, spacing: medium, align: justify, tooltip: '', border: '',
-        foreground: '', visible: true, spacing_above: small, spacing_below: small,
-        background: ''}
-      name: events_header_flow
-      layout_properties: {grid_position: 'ZOHSVX,JPCKDM'}
-      components:
-      - type: Label
-        properties: {role: headline, align: left, tooltip: '', border: '', foreground: '',
-          visible: true, text: Weekend Events, font_size: 20, font: '', spacing_above: small,
-          icon_align: left, spacing_below: small, italic: false, background: '',
-          bold: true, underline: false, icon: 'fa:calendar'}
+      name: clear_filters_button
+      properties: {align: center, background: '', bold: false, border: '', enabled: true, font: '', font_size: null, foreground: '', icon: 'fa:times', icon_align: left, italic: false, role: outlined-button, spacing_above: small, spacing_below: small, text: Clear All Filters, tooltip: '', underline: false, visible: true}
+      type: Button
+    layout_properties: {col_sm: 0, col_xs: 0, row: WKRBKR, width_sm: 4, width_xs: 12}
+    name: filter_panel
+    properties: {background: '', border: '', col_spacing: medium, col_widths: '{}', foreground: '', role: card, spacing_above: small, spacing_below: small, tooltip: '', visible: true, wrap_on: mobile}
+    type: ColumnPanel
+  - components:
+    - components:
+      - layout_properties: {expand: true, width: null}
         name: events_title
-        layout_properties: {width: null, expand: true}
-      - type: Label
-        properties: {role: null, align: right, tooltip: '', border: '', foreground: '#666666',
-          visible: true, text: Showing all events, font_size: 14, font: '', spacing_above: small,
-          icon_align: left, spacing_below: small, italic: false, background: '',
-          bold: false, underline: false, icon: ''}
+        properties: {align: left, background: '', bold: true, border: '', font: '', font_size: 20, foreground: '', icon: 'fa:calendar', icon_align: left, italic: false, role: headline, spacing_above: small, spacing_below: small, text: Weekend Events, tooltip: '', underline: false, visible: true}
+        type: Label
+      - layout_properties: {width: null}
         name: event_count_label
-        layout_properties: {width: null}
-    - type: ColumnPanel
-      properties: {role: null, tooltip: '', border: '', foreground: '', visible: true,
-        wrap_on: mobile, col_spacing: medium, spacing_above: small, col_widths: '{}',
-        spacing_below: small, background: ''}
+        properties: {align: right, background: '', bold: false, border: '', font: '', font_size: 14, foreground: '#666666', icon: '', icon_align: left, italic: false, role: null, spacing_above: small, spacing_below: small, text: Showing all events, tooltip: '', underline: false, visible: true}
+        type: Label
+      layout_properties: {grid_position: 'ZOHSVX,JPCKDM'}
+      name: events_header_flow
+      properties: {align: justify, background: '', border: '', foreground: '', role: null, spacing: medium, spacing_above: small, spacing_below: small, tooltip: '', visible: true}
+      type: FlowPanel
+    - layout_properties: {grid_position: 'BHHHJW,JUXIQK'}
       name: events_container
-      layout_properties: {grid_position: 'BHHHJW,JUXIQK'}
-
+      properties: {background: '', border: '', col_spacing: medium, col_widths: '{}', foreground: '', role: null, spacing_above: small, spacing_below: small, tooltip: '', visible: true, wrap_on: mobile}
+      type: ColumnPanel
+    layout_properties: {col_sm: 4, col_xs: 0, row: WKRBKR, width_sm: 8, width_xs: 12}
+    name: events_panel
+    properties: {background: '', border: '', col_spacing: medium, col_widths: '{}', foreground: '', role: card, spacing_above: small, spacing_below: small, tooltip: '', visible: true, wrap_on: mobile}
+    type: ColumnPanel
+  layout_properties: {grid_position: 'PKXOQA,HTAECN'}
+  name: main_grid
+  properties: {background: '', border: '', foreground: '', role: null, spacing_above: small, spacing_below: small, tooltip: '', visible: true}
+  type: GridPanel
+container:
+  properties: {background: '', border: '', col_spacing: medium, col_widths: '{}', foreground: '', role: null, spacing_above: small, spacing_below: small, tooltip: '', visible: true, wrap_on: mobile}
+  type: ColumnPanel
 is_package: true
-

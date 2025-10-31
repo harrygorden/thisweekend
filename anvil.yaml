@@ -180,6 +180,6 @@ services:
 - client_config: {}
   server_config: {}
   source: /runtime/services/anvil/secrets.yml
-startup: {module: AdminForm, type: form}
+startup: {module: MainApp, type: form}
 startup_form: null
 uplink_visible: true
