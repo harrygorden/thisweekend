@@ -302,23 +302,14 @@ def parse_events_from_markdown(markdown_content):
     # This captures events formatted as links
     link_pattern = r'\[([^\]]+)\]\(([^\)]+)\)'
     
-    # Skip patterns - links we don't want to treat as events
-    skip_patterns = [
-        r'^reply$',  # Comment reply links
-        r'comment/reply',  # Comment reply URLs
-        r'submit\s+here',
-        r'click\s+here',
-        r'read\s+more',
-        r'learn\s+more',
-        r'view\s+all',
-        r'see\s+all',
-        r'share',
-        r'tweet',
-        r'i\s+love\s+memphis\s+blog',
-        r'ilovememphisblog\.com/events/add',  # Submit event page
-        r'ilovememphisblog\.com/search',  # Search page
-        r'^www\.',
-        r'^https?://(www\.)?facebook\.com',  # Skip Facebook links (require login)
+    # ONLY accept links to /events/ - these are real event pages
+    # Format: https://ilovememphisblog.com/events/category/event-name
+    event_url_pattern = r'ilovememphisblog\.com/events/[^/]+/[^/]+'
+    
+    # Additional skip patterns for event URLs we don't want
+    skip_event_patterns = [
+        r'/events/add',  # Submit event page
+        r'/events/category/all-events',  # Calendar page
     ]
     
     lines = markdown_content.split('\n')
@@ -363,22 +354,17 @@ def parse_events_from_markdown(markdown_content):
             link_text = match.group(1).strip()
             link_url = match.group(2).strip()
             
-            # Skip if this matches any skip pattern (text)
+            # FIRST: Check if this is a real event URL (ilovememphisblog.com/events/...)
+            if not re.search(event_url_pattern, link_url):
+                links_skipped += 1
+                skip_reasons["not_event_url"] = skip_reasons.get("not_event_url", 0) + 1
+                continue
+            
+            # Check skip patterns for event URLs we don't want
             skip_reason = None
-            for pattern in skip_patterns:
-                if re.search(pattern, link_text, re.IGNORECASE):
-                    skip_reason = f"text:{pattern}"
-                    break
-            
-            if skip_reason:
-                links_skipped += 1
-                skip_reasons[skip_reason] = skip_reasons.get(skip_reason, 0) + 1
-                continue
-            
-            # Skip if URL matches skip patterns
-            for pattern in skip_patterns:
+            for pattern in skip_event_patterns:
                 if re.search(pattern, link_url, re.IGNORECASE):
-                    skip_reason = f"url:{pattern}"
+                    skip_reason = f"skip_event:{pattern}"
                     break
             
             if skip_reason:
@@ -386,7 +372,7 @@ def parse_events_from_markdown(markdown_content):
                 skip_reasons[skip_reason] = skip_reasons.get(skip_reason, 0) + 1
                 continue
             
-            # Parse event details from link text
+            # Parse event details from link text AND scrape the event page
             # Format: "Event Title, Location, Time, Price" or variations
             event = parse_event_link_text(link_text, link_url, current_day, weekend_dates)
             
@@ -394,7 +380,7 @@ def parse_events_from_markdown(markdown_content):
                 events.append(event)
             else:
                 links_skipped += 1
-                skip_reasons["no_day_context_or_invalid"] = skip_reasons.get("no_day_context_or_invalid", 0) + 1
+                skip_reasons["parse_failed"] = skip_reasons.get("parse_failed", 0) + 1
     
     # Print summary with details
     print(f"  🔍 Parser stats: {total_links_found} links found, {links_skipped} skipped, {len(events)} events parsed")
@@ -410,31 +396,159 @@ def parse_events_from_markdown(markdown_content):
         for reason, count in sorted(skip_reasons.items(), key=lambda x: x[1], reverse=True)[:3]:
             print(f"     {reason}: {count} links")
     
+    if len(events) > 0:
+        print(f"  ℹ️ Note: Scraping {len(events)} individual event pages for detailed info...")
+        print(f"     This will take ~{len(events) * 3} seconds ({len(events)} Firecrawl calls)")
+    
     return events
+
+
+def scrape_event_details_from_url(event_url, api_key):
+    """
+    Scrape individual event page for detailed information.
+    Event pages have more consistent layout than the weekend listing.
+    
+    Args:
+        event_url: URL to the specific event page
+        api_key: Firecrawl API key
+        
+    Returns:
+        dict: Detailed event information or None if scraping fails
+    """
+    try:
+        # Try SDK first if available
+        if FIRECRAWL_SDK_AVAILABLE:
+            try:
+                firecrawl = Firecrawl(api_key=api_key)
+                result = firecrawl.scrape(
+                    url=event_url,
+                    formats=['markdown']
+                )
+                if hasattr(result, 'markdown'):
+                    return extract_details_from_event_page(result.markdown)
+            except Exception:
+                pass  # Fall through to HTTP
+        
+        # Fallback to HTTP
+        url = "https://api.firecrawl.dev/v2/scrape"
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "url": event_url,
+            "formats": ["markdown"],
+            "timeout": 30000  # Shorter timeout for individual pages
+        }
+        
+        response = anvil.http.request(url, method="POST", json=payload, headers=headers, timeout=30)
+        response_text = response.get_bytes().decode('utf-8')
+        result = json.loads(response_text)
+        
+        if result.get("success") and "data" in result:
+            markdown = result["data"].get("markdown", "")
+            return extract_details_from_event_page(markdown)
+        
+    except Exception as e:
+        # Silently fail - we'll use the data from the weekend page
+        return None
+    
+    return None
+
+
+def extract_details_from_event_page(markdown):
+    """
+    Extract structured details from an individual event page markdown.
+    
+    Args:
+        markdown: Markdown content from event page
+        
+    Returns:
+        dict: Extracted details (location, time, cost, description, etc.)
+    """
+    details = {
+        'location': None,
+        'start_time': None,
+        'end_time': None,
+        'cost_raw': None,
+        'description': None,
+        'date': None
+    }
+    
+    lines = markdown.split('\n')
+    description_lines = []
+    
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        
+        # Look for location patterns
+        if re.search(r'\*\*Location\*\*:?\s*(.+)', line, re.IGNORECASE):
+            match = re.search(r'\*\*Location\*\*:?\s*(.+)', line, re.IGNORECASE)
+            details['location'] = match.group(1).strip()
+        elif re.search(r'\*\*Venue\*\*:?\s*(.+)', line, re.IGNORECASE):
+            match = re.search(r'\*\*Venue\*\*:?\s*(.+)', line, re.IGNORECASE)
+            details['location'] = match.group(1).strip()
+        
+        # Look for time patterns
+        if re.search(r'\*\*Time\*\*:?\s*(.+)', line, re.IGNORECASE):
+            match = re.search(r'\*\*Time\*\*:?\s*(.+)', line, re.IGNORECASE)
+            time_text = match.group(1).strip()
+            # Extract first time found
+            time_match = re.search(r'(\d{1,2}(?::\d{2})?\s*(?:a\.m\.|p\.m\.|am|pm))', time_text, re.IGNORECASE)
+            if time_match:
+                details['start_time'] = time_match.group(1)
+        
+        # Look for cost/price patterns
+        if re.search(r'\*\*(Cost|Price|Admission)\*\*:?\s*(.+)', line, re.IGNORECASE):
+            match = re.search(r'\*\*(Cost|Price|Admission)\*\*:?\s*(.+)', line, re.IGNORECASE)
+            details['cost_raw'] = match.group(2).strip()
+        elif re.search(r'\$\d+', line) and not details['cost_raw']:
+            details['cost_raw'] = line
+        elif re.search(r'\bfree\b', line, re.IGNORECASE) and not details['cost_raw']:
+            details['cost_raw'] = line
+        
+        # Look for date patterns
+        if re.search(r'\*\*Date\*\*:?\s*(.+)', line, re.IGNORECASE):
+            match = re.search(r'\*\*Date\*\*:?\s*(.+)', line, re.IGNORECASE)
+            date_text = match.group(1).strip()
+            parsed_date = api_helpers.parse_date_string(date_text)
+            if parsed_date:
+                details['date'] = parsed_date
+        
+        # Collect description (non-metadata lines)
+        if not line.startswith('**') and len(line) > 20:
+            description_lines.append(line)
+    
+    # Build description from collected lines
+    if description_lines:
+        details['description'] = ' '.join(description_lines[:5])  # First 5 lines
+    
+    return details
 
 
 def parse_event_link_text(link_text, link_url, current_day, weekend_dates):
     """
-    Parse event details from a markdown link's text.
+    Parse event details from a markdown link's text, then scrape the event page for better details.
     
     Args:
         link_text: The text inside [...]
-        link_url: The URL
+        link_url: The URL to the event page
         current_day: Current day context (friday/saturday/sunday)
         weekend_dates: Dict of weekend dates
         
     Returns:
-        dict: Event dictionary or None if not a valid event
+        dict: Event dictionary with details from both link text and event page
     """
     # Events typically have commas separating components
     # Format: "Event Name, Location, Time, Price"
     
     # Skip very short links (likely navigation, not events)
-    if len(link_text) < 5:  # Reduced from 10 to be more lenient
+    if len(link_text) < 5:
         return None
     
-    # If no current day context, try to infer from link text
-    # or default to Friday (most common posting day)
+    # Determine day assignment
     assigned_day = current_day
     if not assigned_day:
         # Check if day is mentioned in the link text
@@ -447,20 +561,19 @@ def parse_event_link_text(link_text, link_url, current_day, weekend_dates):
         elif re.search(r'\ball\s+weekend\b', link_text, re.IGNORECASE):
             assigned_day = 'friday'  # Default to Friday for "All Weekend" events
         else:
-            # Default to Friday if no day context (most events are weekend-long)
-            assigned_day = 'friday'
+            assigned_day = 'friday'  # Default
     
-    # Split by comma to get components
+    # Parse basic info from link text first
     parts = [p.strip() for p in link_text.split(',')]
     
-    # Need at least event name (title)
     if len(parts) < 1 or not parts[0]:
         return None
     
+    # Create event with basic info from link text
     event = {
         "event_id": api_helpers.generate_unique_id("evt"),
         "title": parts[0],
-        "description": link_text,  # Full text as description
+        "description": link_text,
         "location": "TBD",
         "start_time": "TBD",
         "end_time": None,
@@ -470,24 +583,42 @@ def parse_event_link_text(link_text, link_url, current_day, weekend_dates):
         "source_url": link_url
     }
     
-    # Extract location (usually second component)
+    # Extract from link text (basic fallback)
     if len(parts) >= 2:
-        # Check if second part looks like a location (not time/price)
         potential_location = parts[1]
         if not re.search(r'\d+\s*(am|pm|p\.m\.|a\.m\.)', potential_location, re.IGNORECASE):
             if not re.search(r'\$\d+', potential_location):
                 event["location"] = potential_location
     
-    # Extract time and cost from remaining parts
     for part in parts[1:]:
-        # Time pattern: "7 p.m.", "7:00 PM", "7 p.m. - 10 p.m."
         time_match = re.search(r'(\d{1,2}(?::\d{2})?\s*(?:a\.m\.|p\.m\.|am|pm))', part, re.IGNORECASE)
         if time_match and event["start_time"] == "TBD":
             event["start_time"] = api_helpers.parse_time_string(time_match.group(1))
         
-        # Cost pattern: "$10", "free", "prices vary", "$10-$20"
         if re.search(r'\$|free|price', part, re.IGNORECASE):
             event["cost_raw"] = part
+    
+    # NOW: Scrape the individual event page for better details
+    try:
+        api_key = api_helpers.get_api_key("FIRECRAWL_API_KEY")
+        detailed_info = scrape_event_details_from_url(link_url, api_key)
+        
+        if detailed_info:
+            # Override with better data from event page (if available)
+            if detailed_info.get('location'):
+                event["location"] = detailed_info['location']
+            if detailed_info.get('start_time'):
+                event["start_time"] = api_helpers.parse_time_string(detailed_info['start_time'])
+            if detailed_info.get('cost_raw'):
+                event["cost_raw"] = detailed_info['cost_raw']
+            if detailed_info.get('description'):
+                event["description"] = detailed_info['description']
+            if detailed_info.get('date'):
+                event["date"] = detailed_info['date']
+    
+    except Exception:
+        # If scraping individual page fails, use link text data
+        pass
     
     return event
 
