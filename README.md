@@ -34,26 +34,25 @@ An intelligent Anvil web application that helps you plan your weekend by combini
 
 ```
 thisweekend/
-├── README.md                          # This file
-├── project_plan.md                    # Comprehensive project plan (12 phases)
-├── IMPLEMENTATION_SUMMARY.md          # ⭐ What's been built
-├── NEXT_STEPS.md                      # ⭐ Your next actions
-├── SERVER_FUNCTIONS_REFERENCE.md     # Complete API reference
-├── SDK_SETUP_GUIDE.md                 # 📚 SDK installation & setup guide
-├── QUICK_SDK_SUMMARY.md               # 📝 TL;DR for SDK setup
-├── SDK_ARCHITECTURE_DIAGRAM.md        # 🏗️ How SDK/HTTP fallback works
-├── setup_data_tables.py               # Table setup helper script
-├── server_code/                       # ✅ All 7 server modules (COMPLETE)
+├── README.md                          # This file - project overview
+├── DEPLOYMENT_GUIDE.md                # Complete deployment instructions
+├── USER_GUIDE.md                      # Admin interface user guide
+├── project_plan.md                    # Comprehensive project plan
+├── LICENSE.txt                        # MIT license
+├── server_code/                       # Server-side Python modules
 │   ├── config.py                      # Configuration constants
 │   ├── weather_service.py             # OpenWeather API integration
-│   ├── scraper_service.py             # Firecrawl integration (SDK + HTTP)
-│   ├── ai_service.py                  # OpenAI integration (SDK + HTTP)
+│   ├── scraper_service.py             # Firecrawl SDK integration
+│   ├── ai_service.py                  # OpenAI SDK integration
 │   ├── data_processor.py              # Recommendation engine
 │   ├── background_tasks.py            # Task orchestration
+│   ├── admin_tools.py                 # Admin & testing functions
 │   ├── api_helpers.py                 # Common utilities
-│   └── requirements.txt               # 📦 Dependencies (now uncommented!)
-└── client_code/                       # Anvil client forms (to be created)
-    └── Form1/                         # Main form (basic structure)
+│   └── requirements.txt               # Python dependencies
+└── client_code/                       # Anvil client forms
+    ├── AdminForm/                     # Admin control panel
+    ├── EventCard/                     # Event card component
+    └── Form1/                         # Main user interface (WIP)
 ```
 
 ## 🚀 Quick Start
@@ -70,11 +69,11 @@ You've completed:
 - ✅ Empty Data Tables created
 - ✅ All 7 server modules built and ready
 
-### ✨ NEW: Complete AdminForm Ready to Deploy!
+### ✨ Complete AdminForm Ready!
 
-**No manual work in Anvil editor!** I've created a complete admin panel for you.
+**No manual work in Anvil editor!** A complete admin panel is included.
 
-**👉 See [GITHUB_SYNC_GUIDE.md](GITHUB_SYNC_GUIDE.md) for step-by-step instructions**
+**👉 See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for step-by-step setup**
 
 **Super quick setup:**
 1. Push this code to GitHub
@@ -85,31 +84,21 @@ You've completed:
 6. All 33 columns created automatically! ✨
 
 **What you get:**
-- 🎛️ Complete admin panel with 10 functions
+- 🎛️ Complete admin panel with testing functions
 - ⚙️ One-click database setup
 - 🔍 Health checks and monitoring
 - 📊 Data refresh controls
 - 📝 Real-time status output
 
-**See:** [ADMIN_TOOLS_GUIDE.md](ADMIN_TOOLS_GUIDE.md) for function reference
+**See:** [USER_GUIDE.md](USER_GUIDE.md) for complete admin interface documentation
 
 ## 📖 Documentation
 
-### 🌟 Start Here
-- **[GITHUB_SYNC_GUIDE.md](GITHUB_SYNC_GUIDE.md)** ⚡ **NEW!** - How to deploy your AdminForm
-- **[ADMIN_TOOLS_GUIDE.md](ADMIN_TOOLS_GUIDE.md)** - Admin functions reference
-- **[QUICK_SDK_SUMMARY.md](QUICK_SDK_SUMMARY.md)** 🆕 **NEW!** - TL;DR SDK setup (read this first!)
-- **[IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)** - What's been built
-
-### SDK & API Setup
-- **[SDK_SETUP_GUIDE.md](SDK_SETUP_GUIDE.md)** 📚 **NEW!** - Complete SDK installation guide
-- **[SDK_ARCHITECTURE_DIAGRAM.md](SDK_ARCHITECTURE_DIAGRAM.md)** 🏗️ **NEW!** - How SDK/HTTP works
-- **[server_code/requirements.txt](server_code/requirements.txt)** 📦 **UPDATED!** - Dependencies
-
-### Reference
-- **[SERVER_FUNCTIONS_REFERENCE.md](SERVER_FUNCTIONS_REFERENCE.md)** - Complete API reference
-- **[NEXT_STEPS.md](NEXT_STEPS.md)** - Alternative manual setup
-- **[project_plan.md](project_plan.md)** - Complete 12-phase plan
+### Essential Guides
+- **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** ⚡ - Complete deployment walkthrough
+- **[USER_GUIDE.md](USER_GUIDE.md)** 📚 - Admin interface documentation
+- **[project_plan.md](project_plan.md)** 📋 - Complete 12-phase development plan
+- **[server_code/requirements.txt](server_code/requirements.txt)** 📦 - Python dependencies
 
 ## 🗄️ Database Schema
 
@@ -122,7 +111,7 @@ Caches weather forecasts for the upcoming weekend.
 ### `scrape_log` Table (7 columns)
 Tracks background task execution and errors.
 
-See [ANVIL_SETUP_INSTRUCTIONS.md](ANVIL_SETUP_INSTRUCTIONS.md) for complete schemas.
+See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for setup instructions.
 
 ## 🔧 Development Workflow
 

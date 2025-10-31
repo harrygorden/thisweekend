@@ -1,13 +1,9 @@
 """
 AI service module for This Weekend app.
-Handles integration with OpenAI ChatGPT API for event analysis.
-
-This module tries to use the OpenAI Python SDK for reliability,
-with automatic fallback to raw HTTP if the SDK is not available.
+Handles integration with OpenAI SDK for event analysis.
 """
 
 import anvil.server
-import anvil.http
 from datetime import datetime
 import json
 import time
@@ -15,16 +11,8 @@ import time
 from . import config
 from . import api_helpers
 
-# Try to import OpenAI Python SDK (more reliable)
-try:
-    from openai import OpenAI
-    OPENAI_SDK_AVAILABLE = True
-    print("✅ OpenAI Python SDK available - using SDK mode")
-except ImportError:
-    OPENAI_SDK_AVAILABLE = False
-    print("⚠️ OpenAI SDK not installed - using fallback HTTP mode")
-    print("   Install with: pip install openai")
-    print("   See server_code/requirements.txt for instructions")
+# Import OpenAI SDK (required dependency)
+from openai import OpenAI
 
 
 def analyze_event(event):
@@ -34,8 +22,6 @@ def analyze_event(event):
     - Audience type
     - Categories
     - Cost level refinement
-    
-    Tries to use OpenAI SDK first, falls back to raw HTTP if SDK unavailable.
     
     Args:
         event: Event dictionary with title, description, location
@@ -49,90 +35,13 @@ def analyze_event(event):
     # Build the prompt
     prompt = build_analysis_prompt(event)
     
-    # Try SDK first if available (more reliable)
-    if OPENAI_SDK_AVAILABLE:
-        try:
-            return analyze_event_with_sdk(api_key, event, prompt)
-        except Exception as sdk_error:
-            print(f"  ⚠️ SDK method failed: {str(sdk_error)[:200]}")
-            print("  🔄 Falling back to raw HTTP method...")
-            # Continue to raw HTTP fallback below
+    # Initialize OpenAI client
+    client = OpenAI(api_key=api_key)
     
-    # Fallback to raw HTTP
-    return analyze_event_with_http(api_key, event, prompt)
-
-
-def analyze_event_with_sdk(api_key, event, prompt):
-    """
-    Analyze event using OpenAI Python SDK (recommended method).
-    
-    Args:
-        api_key: OpenAI API key
-        event: Event dictionary
-        prompt: Analysis prompt
-        
-    Returns:
-        dict: Analysis results
-    """
-    # Reduced verbosity - only log on first call or errors
-    try:
-        # Initialize OpenAI client
-        client = OpenAI(api_key=api_key)
-        
-        # Make API call
-        response = client.chat.completions.create(
-            model=config.OPENAI_MODEL,
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are an event categorization assistant. Analyze events and return structured JSON data."
-                },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ],
-            temperature=config.OPENAI_TEMPERATURE,
-            max_tokens=config.OPENAI_MAX_TOKENS,
-            response_format={"type": "json_object"}
-        )
-        
-        # Extract and parse response
-        content = response.choices[0].message.content
-        analysis = json.loads(content)
-        
-        return analysis
-        
-    except Exception as e:
-        print(f"  ❌ SDK error for '{event.get('title', 'Unknown')}': {str(e)}")
-        raise
-
-
-def analyze_event_with_http(api_key, event, prompt):
-    """
-    Analyze event using raw HTTP requests to OpenAI API (fallback method).
-    
-    Args:
-        api_key: OpenAI API key
-        event: Event dictionary
-        prompt: Analysis prompt
-        
-    Returns:
-        dict: Analysis results
-    """
-    # Reduced verbosity - only log on errors
-    
-    # OpenAI API endpoint
-    url = "https://api.openai.com/v1/chat/completions"
-    
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
-    
-    payload = {
-        "model": config.OPENAI_MODEL,
-        "messages": [
+    # Make API call
+    response = client.chat.completions.create(
+        model=config.OPENAI_MODEL,
+        messages=[
             {
                 "role": "system",
                 "content": "You are an event categorization assistant. Analyze events and return structured JSON data."
@@ -142,35 +51,16 @@ def analyze_event_with_http(api_key, event, prompt):
                 "content": prompt
             }
         ],
-        "temperature": config.OPENAI_TEMPERATURE,
-        "max_tokens": config.OPENAI_MAX_TOKENS,
-        "response_format": {"type": "json_object"}
-    }
+        temperature=config.OPENAI_TEMPERATURE,
+        max_tokens=config.OPENAI_MAX_TOKENS,
+        response_format={"type": "json_object"}
+    )
     
-    try:
-        # In Anvil, http.request returns a StreamingMedia object
-        response = anvil.http.request(
-            url,
-            method="POST",
-            json=payload,
-            headers=headers,
-            timeout=30
-        )
-        
-        # Convert StreamingMedia to string
-        response_text = response.get_bytes().decode('utf-8')
-        
-        # Parse response
-        result = json.loads(response_text)
-        content = result["choices"][0]["message"]["content"]
-        analysis = json.loads(content)
-        
-        return analysis
-        
-    except Exception as e:
-        print(f"Error analyzing event '{event.get('title', 'Unknown')}': {str(e)}")
-        # Return default values on error
-        return get_default_analysis()
+    # Extract and parse response
+    content = response.choices[0].message.content
+    analysis = json.loads(content)
+    
+    return analysis
 
 
 def build_analysis_prompt(event):
@@ -220,7 +110,7 @@ def get_default_analysis():
         dict: Default analysis values
     """
     return {
-        "is_indoor": True,  # Conservative default
+        "is_indoor": True,
         "is_outdoor": False,
         "audience_type": "all-ages",
         "categories": ["Other"],
@@ -288,7 +178,7 @@ def analyze_all_events(events):
     for i, event in enumerate(events):
         event_id = event["event_id"]
         
-        # Show progress only at key milestones: 25%, 50%, 75%, 100%
+        # Show progress only at key milestones
         if (i + 1) in milestones:
             percent = int(((i + 1) / total) * 100)
             print(f"  ✓ {percent}% complete ({i+1}/{total})")
@@ -350,7 +240,7 @@ def update_events_with_analysis(analyses):
                 event["is_indoor"] = analysis["is_indoor"]
                 event["is_outdoor"] = analysis["is_outdoor"]
                 event["audience_type"] = analysis["audience_type"]
-                event["categories"] = analysis["categories"]  # Store as SimpleObject/list
+                event["categories"] = analysis["categories"]
                 event["cost_level"] = analysis["cost_level"]
                 event["analyzed_at"] = datetime.now()
                 
@@ -364,4 +254,3 @@ def update_events_with_analysis(analyses):
     except Exception as e:
         print(f"Error updating events with analysis: {str(e)}")
         raise
-

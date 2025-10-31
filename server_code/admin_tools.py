@@ -355,37 +355,231 @@ def run_quick_health_check():
     return health
 
 
-# Example usage from a form:
-"""
-# In your form's __init__.py:
-
-def setup_button_click(self, **event_args):
-    '''Run database setup'''
-    result = anvil.server.call('run_database_setup')
+@anvil.server.callable
+def test_openweather_api():
+    """
+    Test OpenWeather API connection and data retrieval.
     
-    if result['summary']['tables_error'] > 0:
-        alert(f"Setup failed! {result['summary']['tables_error']} tables have errors.")
-    elif result['summary']['tables_fixed'] > 0:
-        alert(f"Setup complete! Created {result['summary']['total_columns_created']} columns.")
-    else:
-        alert("All tables already configured correctly!")
-
-
-def health_check_button_click(self, **event_args):
-    '''Run health check'''
-    health = anvil.server.call('run_quick_health_check')
+    Returns:
+        dict: Test results with weather data or error
+    """
+    from . import weather_service
     
-    if health['overall_status'] == 'ok':
-        alert("✅ System is healthy!")
-    else:
-        issues = '\\n'.join(health['issues'])
-        alert(f"⚠️ Issues found:\\n{issues}")
+    result = {
+        'success': False,
+        'timestamp': datetime.now()
+    }
+    
+    try:
+        print("Testing OpenWeather API...")
+        weather_data = weather_service.fetch_weekend_weather()
+        
+        result['success'] = True
+        result['days_count'] = len(weather_data)
+        result['weather_data'] = weather_data
+        
+        print(f"✅ OpenWeather test passed! Got {len(weather_data)} days")
+        
+    except Exception as e:
+        result['success'] = False
+        result['error'] = str(e)
+        print(f"❌ OpenWeather test failed: {str(e)}")
+    
+    return result
 
 
-def clear_data_button_click(self, **event_args):
-    '''Clear all data (for testing)'''
-    if confirm("Are you sure you want to delete ALL data?"):
-        result = anvil.server.call('clear_all_data')
-        alert(f"Deleted: {result['deleted']}")
-"""
+@anvil.server.callable
+def test_openai_api():
+    """
+    Test OpenAI API connection with a sample event analysis.
+    
+    Returns:
+        dict: Test results with AI analysis or error
+    """
+    from . import ai_service
+    
+    result = {
+        'success': False,
+        'timestamp': datetime.now()
+    }
+    
+    # Create test event
+    test_event = {
+        'title': 'Live Jazz Concert at Overton Park',
+        'description': 'Outdoor jazz concert featuring local Memphis musicians. Bring blankets and chairs for lawn seating. Food trucks and beverages available.',
+        'location': 'Overton Park Shell',
+        'cost_raw': '$15 advance tickets, $20 at door'
+    }
+    
+    try:
+        print("Testing OpenAI API...")
+        analysis = ai_service.analyze_event(test_event)
+        
+        result['success'] = True
+        result['test_event'] = test_event
+        result['analysis'] = analysis
+        
+        print(f"✅ OpenAI test passed! Event analyzed")
+        
+    except Exception as e:
+        result['success'] = False
+        result['error'] = str(e)
+        print(f"❌ OpenAI test failed: {str(e)}")
+    
+    return result
+
+
+@anvil.server.callable
+def test_firecrawl_connection():
+    """
+    Test Firecrawl API connectivity and authentication.
+    Tests with a known-good URL and the target URL with/without stealth.
+    
+    Returns:
+        dict: Test results
+    """
+    import anvil.http
+    import json
+    from . import api_helpers
+    
+    results = {
+        'timestamp': datetime.now(),
+        'tests': {}
+    }
+    
+    # Get API key
+    try:
+        api_key = api_helpers.get_api_key("FIRECRAWL_API_KEY")
+        results['api_key_configured'] = True
+        results['api_key_preview'] = f"{api_key[:10]}...{api_key[-4:]}" if len(api_key) > 14 else "***"
+    except Exception as e:
+        results['api_key_configured'] = False
+        results['api_key_error'] = str(e)
+        return results
+    
+    # Test 1: Simple test URL (firecrawl.dev - should always work)
+    print("\n" + "="*60)
+    print("TEST 1: Firecrawl with Known-Good URL")
+    print("="*60)
+    
+    test_url = "https://firecrawl.dev"
+    results['tests']['test_url'] = _test_firecrawl_url(api_key, test_url, use_stealth=False)
+    
+    # Test 2: Target URL without stealth
+    print("\n" + "="*60)
+    print("TEST 2: Target URL without Stealth Mode")
+    print("="*60)
+    
+    target_url = "https://ilovememphisblog.com/weekend"
+    results['tests']['target_no_stealth'] = _test_firecrawl_url(api_key, target_url, use_stealth=False)
+    
+    # Test 3: Target URL with stealth
+    print("\n" + "="*60)
+    print("TEST 3: Target URL with Stealth Mode")
+    print("="*60)
+    
+    results['tests']['target_with_stealth'] = _test_firecrawl_url(api_key, target_url, use_stealth=True)
+    
+    # Summary
+    print("\n" + "="*60)
+    print("SUMMARY")
+    print("="*60)
+    
+    for test_name, test_result in results['tests'].items():
+        status = "✅ SUCCESS" if test_result['success'] else "❌ FAILED"
+        print(f"{test_name}: {status}")
+        if not test_result['success']:
+            print(f"  Error: {test_result.get('error', 'Unknown')}")
+    
+    return results
+
+
+def _test_firecrawl_url(api_key, url, use_stealth=False):
+    """
+    Helper function to test scraping a specific URL with Firecrawl v2.
+    
+    Args:
+        api_key: Firecrawl API key
+        url: URL to test
+        use_stealth: Whether to use stealth mode
+        
+    Returns:
+        dict: Test results
+    """
+    import anvil.http
+    import json
+    
+    result = {
+        'url': url,
+        'stealth': use_stealth,
+        'success': False
+    }
+    
+    # Build request using Firecrawl SDK
+    try:
+        from firecrawl import Firecrawl
+        
+        firecrawl = Firecrawl(api_key=api_key)
+        
+        print(f"Testing URL: {url}")
+        print(f"Stealth mode: {use_stealth}")
+        
+        # Make request (SDK doesn't expose stealth mode directly, so we'll note this)
+        response = firecrawl.scrape(url=url, formats=['markdown'])
+        
+        if hasattr(response, 'markdown'):
+            result['success'] = True
+            result['markdown_size'] = len(response.markdown)
+            
+            if hasattr(response, 'metadata') and response.metadata:
+                result['metadata'] = {
+                    'title': getattr(response.metadata, 'title', 'Unknown'),
+                    'status_code': getattr(response.metadata, 'statusCode', 'Unknown')
+                }
+            
+            print(f"✅ SUCCESS! Got {result['markdown_size']} chars of markdown")
+        else:
+            result['success'] = False
+            result['error'] = "No markdown content in response"
+            print(f"❌ No markdown content returned")
+    
+    except Exception as e:
+        result['success'] = False
+        result['error'] = str(e)
+        print(f"❌ Exception: {str(e)}")
+    
+    return result
+
+
+@anvil.server.callable
+def create_test_events():
+    """
+    Create realistic test events for UI testing without using external APIs.
+    
+    Returns:
+        int: Number of test events created
+    """
+    from . import test_data
+    return test_data.create_test_events()
+
+
+@anvil.server.callable
+def clear_test_events():
+    """
+    Clear only test events (identified by special ID pattern).
+    
+    Returns:
+        int: Number of test events deleted
+    """
+    from anvil.tables import app_tables
+    
+    count = 0
+    for event in app_tables.events.search():
+        # Test events have IDs starting with 'test_'
+        if event['event_id'] and event['event_id'].startswith('test_'):
+            event.delete()
+            count += 1
+    
+    print(f"Deleted {count} test events")
+    return count
 
