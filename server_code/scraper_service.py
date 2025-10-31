@@ -127,11 +127,14 @@ def scrape_with_firecrawl_sdk(api_key):
             markdown_content = result.markdown
             print(f"  ✅ SDK scrape successful: {len(markdown_content)} characters")
             
-            # Log metadata if available
-            if hasattr(result, 'metadata'):
+            # Log metadata if available (metadata is an object, not a dict)
+            if hasattr(result, 'metadata') and result.metadata:
                 metadata = result.metadata
-                print(f"  Page title: {metadata.get('title', 'Unknown')}")
-                print(f"  Status code: {metadata.get('statusCode', 'Unknown')}")
+                # Access metadata attributes directly (not dictionary keys)
+                title = getattr(metadata, 'title', 'Unknown')
+                status_code = getattr(metadata, 'statusCode', getattr(metadata, 'status_code', 'Unknown'))
+                print(f"  Page title: {title}")
+                print(f"  Status code: {status_code}")
             
             return markdown_content
         else:
