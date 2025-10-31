@@ -324,14 +324,31 @@ def parse_events_from_markdown(markdown_content):
     lines = markdown_content.split('\n')
     total_links_found = 0
     links_skipped = 0
+    skip_reasons = {}  # Track why links were skipped
+    
+    # Debug: Look for day keywords in content
+    day_keywords_found = []
+    for line in markdown_content.split('\n')[:100]:  # Check first 100 lines
+        if re.search(r'\b(friday|saturday|sunday)\b', line, re.IGNORECASE):
+            day_keywords_found.append(line.strip()[:80])  # First 80 chars
+            if len(day_keywords_found) >= 3:  # Just show first 3
+                break
     
     for line in lines:
         line = line.strip()
         if not line:
             continue
         
-        # Track day headers (## FRIDAY, ## SATURDAY, ## SUNDAY, etc.)
+        # Track day headers - try multiple patterns
+        # Pattern 1: ## FRIDAY or ### FRIDAY
         day_match = re.search(r'#{1,3}\s*(FRIDAY|SATURDAY|SUNDAY)', line, re.IGNORECASE)
+        # Pattern 2: Just the word FRIDAY/SATURDAY/SUNDAY on its own line or in caps
+        if not day_match:
+            day_match = re.search(r'^(FRIDAY|SATURDAY|SUNDAY)\s*$', line, re.IGNORECASE)
+        # Pattern 3: Day name at start of line
+        if not day_match:
+            day_match = re.search(r'^(FRIDAY|SATURDAY|SUNDAY)\b', line, re.IGNORECASE)
+        
         if day_match:
             current_day = day_match.group(1).lower()
             print(f"  📅 Found day header: {day_match.group(1)}")
@@ -347,13 +364,26 @@ def parse_events_from_markdown(markdown_content):
             link_url = match.group(2).strip()
             
             # Skip if this matches any skip pattern (text)
-            if any(re.search(pattern, link_text, re.IGNORECASE) for pattern in skip_patterns):
+            skip_reason = None
+            for pattern in skip_patterns:
+                if re.search(pattern, link_text, re.IGNORECASE):
+                    skip_reason = f"text:{pattern}"
+                    break
+            
+            if skip_reason:
                 links_skipped += 1
+                skip_reasons[skip_reason] = skip_reasons.get(skip_reason, 0) + 1
                 continue
             
             # Skip if URL matches skip patterns
-            if any(re.search(pattern, link_url, re.IGNORECASE) for pattern in skip_patterns):
+            for pattern in skip_patterns:
+                if re.search(pattern, link_url, re.IGNORECASE):
+                    skip_reason = f"url:{pattern}"
+                    break
+            
+            if skip_reason:
                 links_skipped += 1
+                skip_reasons[skip_reason] = skip_reasons.get(skip_reason, 0) + 1
                 continue
             
             # Parse event details from link text
@@ -364,8 +394,22 @@ def parse_events_from_markdown(markdown_content):
                 events.append(event)
             else:
                 links_skipped += 1
+                skip_reasons["no_day_context_or_invalid"] = skip_reasons.get("no_day_context_or_invalid", 0) + 1
     
+    # Print summary with details
     print(f"  🔍 Parser stats: {total_links_found} links found, {links_skipped} skipped, {len(events)} events parsed")
+    if day_keywords_found:
+        print(f"  📅 Day keywords found in content (first 3):")
+        for line in day_keywords_found:
+            print(f"     '{line}'")
+    else:
+        print(f"  ⚠️ No day keywords (FRIDAY/SATURDAY/SUNDAY) found in first 100 lines!")
+    
+    if links_skipped > 0 and len(skip_reasons) > 0:
+        print(f"  ❌ Skip reasons (top 3):")
+        for reason, count in sorted(skip_reasons.items(), key=lambda x: x[1], reverse=True)[:3]:
+            print(f"     {reason}: {count} links")
+    
     return events
 
 
@@ -389,9 +433,22 @@ def parse_event_link_text(link_text, link_url, current_day, weekend_dates):
     if len(link_text) < 5:  # Reduced from 10 to be more lenient
         return None
     
-    # If no current day context, skip (can't assign date)
-    if not current_day:
-        return None
+    # If no current day context, try to infer from link text
+    # or default to Friday (most common posting day)
+    assigned_day = current_day
+    if not assigned_day:
+        # Check if day is mentioned in the link text
+        if re.search(r'\bfriday\b', link_text, re.IGNORECASE):
+            assigned_day = 'friday'
+        elif re.search(r'\bsaturday\b', link_text, re.IGNORECASE):
+            assigned_day = 'saturday'
+        elif re.search(r'\bsunday\b', link_text, re.IGNORECASE):
+            assigned_day = 'sunday'
+        elif re.search(r'\ball\s+weekend\b', link_text, re.IGNORECASE):
+            assigned_day = 'friday'  # Default to Friday for "All Weekend" events
+        else:
+            # Default to Friday if no day context (most events are weekend-long)
+            assigned_day = 'friday'
     
     # Split by comma to get components
     parts = [p.strip() for p in link_text.split(',')]
@@ -408,7 +465,7 @@ def parse_event_link_text(link_text, link_url, current_day, weekend_dates):
         "start_time": "TBD",
         "end_time": None,
         "cost_raw": "",
-        "date": weekend_dates.get(current_day),
+        "date": weekend_dates.get(assigned_day),
         "scraped_at": datetime.now(),
         "source_url": link_url
     }
