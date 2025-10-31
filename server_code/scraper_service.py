@@ -281,12 +281,13 @@ def scrape_with_firecrawl_http(api_key):
 
 def parse_events_from_markdown(markdown_content):
     """
-    Parse event data from markdown or text content.
-    Extracts event details using pattern matching.
-    Works with both Firecrawl markdown and direct HTML text.
+    Parse event data from markdown content from ilovememphisblog.com/weekend.
+    
+    Events are formatted as markdown links: [Event Details](URL)
+    Example: [Concert, Venue, Time, Price](http://example.com)
     
     Args:
-        markdown_content: Raw markdown or text from website
+        markdown_content: Raw markdown from Firecrawl
         
     Returns:
         list: List of event dictionaries
@@ -294,87 +295,128 @@ def parse_events_from_markdown(markdown_content):
     events = []
     weekend_dates = api_helpers.get_weekend_dates()
     
-    # Split content into sections by headings or separators
-    # This is a simplified parser - may need adjustment based on actual website structure
-    lines = markdown_content.split('\n')
-    
-    current_event = {}
+    # Track current day context for dating events
     current_day = None
+    
+    # Pattern to match markdown links: [text](url)
+    # This captures events formatted as links
+    link_pattern = r'\[([^\]]+)\]\(([^\)]+)\)'
+    
+    # Skip patterns - links we don't want to treat as events
+    skip_patterns = [
+        r'submit\s+here',
+        r'click\s+here',
+        r'read\s+more',
+        r'learn\s+more',
+        r'view\s+all',
+        r'see\s+all',
+        r'i\s+love\s+memphis',
+        r'^www\.',
+        r'^https?://(www\.)?facebook\.com',  # Skip Facebook links (require login)
+    ]
+    
+    lines = markdown_content.split('\n')
     
     for line in lines:
         line = line.strip()
-        
-        # Skip empty lines
         if not line:
             continue
         
-        # Check if line indicates a day (Friday, Saturday, Sunday)
-        if re.search(r'\b(Friday|Saturday|Sunday)\b', line, re.IGNORECASE):
-            day_match = re.search(r'\b(Friday|Saturday|Sunday)\b', line, re.IGNORECASE)
+        # Track day headers (## FRIDAY, ## SATURDAY, ## SUNDAY, etc.)
+        day_match = re.search(r'#{1,3}\s*(FRIDAY|SATURDAY|SUNDAY)', line, re.IGNORECASE)
+        if day_match:
             current_day = day_match.group(1).lower()
             continue
         
-        # Look for event patterns
-        # This is a simplified approach - actual parsing will depend on website structure
-        if line.startswith('#') or line.startswith('##'):
-            # This might be an event title
-            if current_event and current_event.get("title"):
-                # Save previous event
-                events.append(current_event)
-            
-            # Start new event
-            current_event = {
-                "title": line.lstrip('#').strip(),
-                "date": weekend_dates.get(current_day) if current_day else None,
-                "description": "",
-                "location": "",
-                "cost_raw": "",
-                "scraped_at": datetime.now()
-            }
-        else:
-            # Accumulate description or extract metadata
-            if current_event:
-                # Try to extract specific information
-                
-                # Look for time patterns (e.g., "3:00 PM - 5:00 PM" or "3 PM")
-                time_match = re.search(r'(\d{1,2}:\d{2}\s*[APap][Mm]|\d{1,2}\s*[APap][Mm])', line)
-                if time_match and not current_event.get("start_time"):
-                    current_event["start_time"] = api_helpers.parse_time_string(time_match.group(1))
-                
-                # Look for cost indicators
-                if re.search(r'\$|free|cost|price|admission', line, re.IGNORECASE):
-                    if not current_event.get("cost_raw"):
-                        current_event["cost_raw"] = line
-                
-                # Look for location indicators
-                if re.search(r'\bat\b|\blocation\b|venue', line, re.IGNORECASE):
-                    if not current_event.get("location"):
-                        # Extract location from line
-                        location_match = re.search(r'at\s+([^,\.\n]+)', line, re.IGNORECASE)
-                        if location_match:
-                            current_event["location"] = location_match.group(1).strip()
-                
-                # Add to description
-                current_event["description"] += " " + line
-    
-    # Don't forget the last event
-    if current_event and current_event.get("title"):
-        events.append(current_event)
-    
-    # Clean up events
-    for event in events:
-        event["description"] = api_helpers.sanitize_text(event.get("description", ""))
-        event["location"] = api_helpers.sanitize_text(event.get("location", "Unknown"))
-        event["cost_raw"] = api_helpers.sanitize_text(event.get("cost_raw", ""))
-        event["event_id"] = api_helpers.generate_unique_id("evt")
+        # Find all markdown links in this line
+        matches = re.finditer(link_pattern, line)
         
-        # Ensure we have basic required fields
-        if not event.get("start_time"):
-            event["start_time"] = "TBD"
-        if not event.get("end_time"):
-            event["end_time"] = None
+        for match in matches:
+            link_text = match.group(1).strip()
+            link_url = match.group(2).strip()
+            
+            # Skip if this matches any skip pattern
+            if any(re.search(pattern, link_text, re.IGNORECASE) for pattern in skip_patterns):
+                continue
+            
+            # Skip if URL matches skip patterns
+            if any(re.search(pattern, link_url, re.IGNORECASE) for pattern in skip_patterns):
+                continue
+            
+            # Parse event details from link text
+            # Format: "Event Title, Location, Time, Price" or variations
+            event = parse_event_link_text(link_text, link_url, current_day, weekend_dates)
+            
+            if event:
+                events.append(event)
     
     return events
+
+
+def parse_event_link_text(link_text, link_url, current_day, weekend_dates):
+    """
+    Parse event details from a markdown link's text.
+    
+    Args:
+        link_text: The text inside [...]
+        link_url: The URL
+        current_day: Current day context (friday/saturday/sunday)
+        weekend_dates: Dict of weekend dates
+        
+    Returns:
+        dict: Event dictionary or None if not a valid event
+    """
+    # Events typically have commas separating components
+    # Format: "Event Name, Location, Time, Price"
+    
+    # Skip very short links (likely navigation, not events)
+    if len(link_text) < 10:
+        return None
+    
+    # Split by comma to get components
+    parts = [p.strip() for p in link_text.split(',')]
+    
+    # Need at least event name (title)
+    if len(parts) < 1:
+        return None
+    
+    event = {
+        "event_id": api_helpers.generate_unique_id("evt"),
+        "title": parts[0],
+        "description": link_text,  # Full text as description
+        "location": "TBD",
+        "start_time": "TBD",
+        "end_time": None,
+        "cost_raw": "",
+        "date": weekend_dates.get(current_day) if current_day else None,
+        "scraped_at": datetime.now(),
+        "source_url": link_url
+    }
+    
+    # Extract location (usually second component)
+    if len(parts) >= 2:
+        # Check if second part looks like a location (not time/price)
+        potential_location = parts[1]
+        if not re.search(r'\d+\s*(am|pm|p\.m\.|a\.m\.)', potential_location, re.IGNORECASE):
+            if not re.search(r'\$\d+', potential_location):
+                event["location"] = potential_location
+    
+    # Extract time and cost from remaining parts
+    for part in parts[1:]:
+        # Time pattern: "7 p.m.", "7:00 PM", "7 p.m. - 10 p.m."
+        time_match = re.search(r'(\d{1,2}(?::\d{2})?\s*(?:a\.m\.|p\.m\.|am|pm))', part, re.IGNORECASE)
+        if time_match and event["start_time"] == "TBD":
+            event["start_time"] = api_helpers.parse_time_string(time_match.group(1))
+        
+        # Cost pattern: "$10", "free", "prices vary", "$10-$20"
+        if re.search(r'\$|free|price', part, re.IGNORECASE):
+            event["cost_raw"] = part
+    
+    # If no date assigned, skip this event
+    if not event["date"]:
+        return None
+    
+    return event
 
 
 def extract_cost_level(cost_raw_text):
