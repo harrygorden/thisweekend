@@ -8,6 +8,7 @@ import anvil.tables as tables
 import anvil.tables.query as q
 from anvil.tables import app_tables
 from datetime import datetime, timedelta
+import re
 
 from . import config
 from . import weather_service
@@ -246,6 +247,29 @@ def cleanup_old_data():
         event_cutoff = now - timedelta(days=config.DATA_RETENTION["events"])
         weather_cutoff = now - timedelta(days=config.DATA_RETENTION["weather"])
         log_cutoff = now - timedelta(days=config.DATA_RETENTION["scrape_log"])
+        
+        # First, delete junk events (Reply links, comment links, etc.)
+        all_events = list(app_tables.events.search())
+        deleted_junk = 0
+        for event in all_events:
+            try:
+                title = event["title"] or ""
+                # Check if title contains junk patterns
+                junk_patterns = [
+                    r'^reply$',
+                    r'^- \[reply\]',
+                    r'comment/reply',
+                    r'^submit here',
+                    r'^click here',
+                ]
+                if any(re.search(pattern, title, re.IGNORECASE) for pattern in junk_patterns):
+                    event.delete()
+                    deleted_junk += 1
+            except Exception:
+                pass
+        
+        if deleted_junk > 0:
+            print(f"Deleted {deleted_junk} junk events (Reply links, etc.)")
         
         # Delete old events
         old_events = app_tables.events.search()

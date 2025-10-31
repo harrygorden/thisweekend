@@ -304,18 +304,26 @@ def parse_events_from_markdown(markdown_content):
     
     # Skip patterns - links we don't want to treat as events
     skip_patterns = [
+        r'^reply$',  # Comment reply links
+        r'comment/reply',  # Comment reply URLs
         r'submit\s+here',
         r'click\s+here',
         r'read\s+more',
         r'learn\s+more',
         r'view\s+all',
         r'see\s+all',
-        r'i\s+love\s+memphis',
+        r'share',
+        r'tweet',
+        r'i\s+love\s+memphis\s+blog',
+        r'ilovememphisblog\.com/events/add',  # Submit event page
+        r'ilovememphisblog\.com/search',  # Search page
         r'^www\.',
         r'^https?://(www\.)?facebook\.com',  # Skip Facebook links (require login)
     ]
     
     lines = markdown_content.split('\n')
+    total_links_found = 0
+    links_skipped = 0
     
     for line in lines:
         line = line.strip()
@@ -326,21 +334,26 @@ def parse_events_from_markdown(markdown_content):
         day_match = re.search(r'#{1,3}\s*(FRIDAY|SATURDAY|SUNDAY)', line, re.IGNORECASE)
         if day_match:
             current_day = day_match.group(1).lower()
+            print(f"  📅 Found day header: {day_match.group(1)}")
             continue
         
         # Find all markdown links in this line
-        matches = re.finditer(link_pattern, line)
+        matches = list(re.finditer(link_pattern, line))
+        if matches:
+            total_links_found += len(matches)
         
         for match in matches:
             link_text = match.group(1).strip()
             link_url = match.group(2).strip()
             
-            # Skip if this matches any skip pattern
+            # Skip if this matches any skip pattern (text)
             if any(re.search(pattern, link_text, re.IGNORECASE) for pattern in skip_patterns):
+                links_skipped += 1
                 continue
             
             # Skip if URL matches skip patterns
             if any(re.search(pattern, link_url, re.IGNORECASE) for pattern in skip_patterns):
+                links_skipped += 1
                 continue
             
             # Parse event details from link text
@@ -349,7 +362,10 @@ def parse_events_from_markdown(markdown_content):
             
             if event:
                 events.append(event)
+            else:
+                links_skipped += 1
     
+    print(f"  🔍 Parser stats: {total_links_found} links found, {links_skipped} skipped, {len(events)} events parsed")
     return events
 
 
@@ -370,14 +386,18 @@ def parse_event_link_text(link_text, link_url, current_day, weekend_dates):
     # Format: "Event Name, Location, Time, Price"
     
     # Skip very short links (likely navigation, not events)
-    if len(link_text) < 10:
+    if len(link_text) < 5:  # Reduced from 10 to be more lenient
+        return None
+    
+    # If no current day context, skip (can't assign date)
+    if not current_day:
         return None
     
     # Split by comma to get components
     parts = [p.strip() for p in link_text.split(',')]
     
     # Need at least event name (title)
-    if len(parts) < 1:
+    if len(parts) < 1 or not parts[0]:
         return None
     
     event = {
@@ -388,7 +408,7 @@ def parse_event_link_text(link_text, link_url, current_day, weekend_dates):
         "start_time": "TBD",
         "end_time": None,
         "cost_raw": "",
-        "date": weekend_dates.get(current_day) if current_day else None,
+        "date": weekend_dates.get(current_day),
         "scraped_at": datetime.now(),
         "source_url": link_url
     }
@@ -411,10 +431,6 @@ def parse_event_link_text(link_text, link_url, current_day, weekend_dates):
         # Cost pattern: "$10", "free", "prices vary", "$10-$20"
         if re.search(r'\$|free|price', part, re.IGNORECASE):
             event["cost_raw"] = part
-    
-    # If no date assigned, skip this event
-    if not event["date"]:
-        return None
     
     return event
 
