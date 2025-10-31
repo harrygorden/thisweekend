@@ -74,8 +74,7 @@ def analyze_event_with_sdk(api_key, event, prompt):
     Returns:
         dict: Analysis results
     """
-    print(f"  🚀 Using OpenAI SDK for event: {event.get('title', 'Unknown')}")
-    
+    # Reduced verbosity - only log on first call or errors
     try:
         # Initialize OpenAI client
         client = OpenAI(api_key=api_key)
@@ -102,11 +101,10 @@ def analyze_event_with_sdk(api_key, event, prompt):
         content = response.choices[0].message.content
         analysis = json.loads(content)
         
-        print(f"  ✅ SDK analysis successful")
         return analysis
         
     except Exception as e:
-        print(f"  ❌ SDK error: {str(e)}")
+        print(f"  ❌ SDK error for '{event.get('title', 'Unknown')}': {str(e)}")
         raise
 
 
@@ -122,7 +120,7 @@ def analyze_event_with_http(api_key, event, prompt):
     Returns:
         dict: Analysis results
     """
-    print(f"  📡 Using raw HTTP for event: {event.get('title', 'Unknown')}")
+    # Reduced verbosity - only log on errors
     
     # OpenAI API endpoint
     url = "https://api.openai.com/v1/chat/completions"
@@ -288,7 +286,9 @@ def analyze_all_events(events):
     for i, event in enumerate(events):
         event_id = event["event_id"]
         
-        print(f"Analyzing event {i+1}/{len(events)}: {event['title']}")
+        # Show progress every 10 events or on first/last event
+        if i == 0 or (i + 1) % 10 == 0 or i == len(events) - 1:
+            print(f"  Progress: {i+1}/{len(events)} events analyzed")
         
         # Prepare event data for analysis
         event_data = {
@@ -310,7 +310,7 @@ def analyze_all_events(events):
             analyses[event_id] = parse_ai_response(analysis)
             
         except Exception as e:
-            print(f"Failed to analyze event after retries: {str(e)}")
+            print(f"  ❌ Failed to analyze '{event['title']}': {str(e)}")
             analyses[event_id] = get_default_analysis()
         
         # Rate limiting delay (except for last event)
