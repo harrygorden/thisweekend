@@ -1,16 +1,12 @@
 components:
-# Header
 - layout_properties: {grid_position: 'HEADER,TITLE'}
   name: title_label
-  properties: {align: center, bold: true, font_size: 28, icon: 'fa:cog', icon_align: left, role: title, spacing_above: small, spacing_below: small, text: 'This Weekend - Admin Panel'}
+  properties: {align: center, bold: true, font_size: 28, icon: 'fa:cog', icon_align: left, role: title, spacing_above: small, spacing_below: small, text: This Weekend - Admin Panel}
   type: Label
-
 - layout_properties: {grid_position: 'HEADER,SUBTITLE'}
   name: subtitle_label
-  properties: {align: center, font_size: 13, foreground: '#666666', spacing_above: none, spacing_below: small, text: 'Manage and monitor your Memphis event planner application'}
+  properties: {align: center, font_size: 13, foreground: '#666666', spacing_above: none, spacing_below: small, text: Manage and monitor your Memphis event planner application}
   type: Label
-
-# Status Bar
 - components:
   - layout_properties: {grid_position: 'STATUS,COL1', width_xs: 3}
     name: last_refresh_label
@@ -24,10 +20,10 @@ components:
     name: weather_count_label
     properties: {align: center, font_size: 12, icon: 'fa:cloud', icon_align: left, spacing_above: small, spacing_below: small, text: 'Weather Forecasts: 0'}
     type: Label
-  - layout_properties: {grid_position: 'STATUS,COL4', width_xs: 3}
-    event_bindings: {click: refresh_status_button_click}
+  - event_bindings: {click: refresh_status_button_click}
+    layout_properties: {grid_position: 'STATUS,COL4', width_xs: 3}
     name: refresh_status_button
-    properties: {align: center, font_size: 11, icon: 'fa:refresh', icon_align: left, role: outlined-button, spacing_above: small, spacing_below: small, text: 'Refresh', tooltip: 'Refresh status display'}
+    properties: {align: center, font_size: 11, icon: 'fa:refresh', icon_align: left, role: outlined-button, spacing_above: small, spacing_below: small, text: Refresh, tooltip: Refresh status display}
     type: Button
   - layout_properties: {grid_position: 'DBSTATUS,FULL', width_xs: 12}
     name: db_status_label
@@ -37,131 +33,114 @@ components:
   name: status_panel
   properties: {background: '#f5f5f5', border: '1px solid #ddd', role: null, spacing_above: small, spacing_below: medium}
   type: ColumnPanel
-
-# Quick Actions Section
 - layout_properties: {grid_position: 'QA_TITLE,FULL'}
   name: quick_actions_title
-  properties: {align: left, bold: true, font_size: 14, icon: 'fa:bolt', icon_align: left, spacing_above: medium, spacing_below: small, text: 'Quick Actions'}
+  properties: {align: left, bold: true, font_size: 14, icon: 'fa:bolt', icon_align: left, spacing_above: medium, spacing_below: small, text: Quick Actions}
   type: Label
-
 - components:
-  - layout_properties: {grid_position: 'ACTIONS,COL1', width_xs: 3}
-    event_bindings: {click: setup_database_button_click}
+  - event_bindings: {click: setup_database_button_click}
+    layout_properties: {grid_position: 'ACTIONS,COL1', width_xs: 3}
     name: setup_database_button
-    properties: {align: center, font_size: 13, icon: 'fa:wrench', icon_align: left, role: primary-color, spacing_above: small, spacing_below: small, text: 'Setup Database', tooltip: 'Create database tables and columns'}
+    properties: {align: center, font_size: 13, icon: 'fa:wrench', icon_align: left, role: primary-color, spacing_above: small, spacing_below: small, text: Setup Database, tooltip: Create database tables and columns}
     type: Button
-  - layout_properties: {grid_position: 'ACTIONS,COL2', width_xs: 3}
-    event_bindings: {click: test_api_keys_button_click}
+  - event_bindings: {click: test_api_keys_button_click}
+    layout_properties: {grid_position: 'ACTIONS,COL2', width_xs: 3}
     name: test_api_keys_button
-    properties: {align: center, font_size: 13, icon: 'fa:key', icon_align: left, role: filled-button, spacing_above: small, spacing_below: small, text: 'Test API Keys', tooltip: 'Verify API key configuration'}
+    properties: {align: center, font_size: 13, icon: 'fa:key', icon_align: left, role: filled-button, spacing_above: small, spacing_below: small, text: Test API Keys, tooltip: Verify API key configuration}
     type: Button
-  - layout_properties: {grid_position: 'ACTIONS,COL3', width_xs: 3}
-    event_bindings: {click: health_check_button_click}
+  - event_bindings: {click: health_check_button_click}
+    layout_properties: {grid_position: 'ACTIONS,COL3', width_xs: 3}
     name: health_check_button
-    properties: {align: center, font_size: 13, icon: 'fa:heartbeat', icon_align: left, role: filled-button, spacing_above: small, spacing_below: small, text: 'Health Check', tooltip: 'Run system diagnostics'}
+    properties: {align: center, font_size: 13, icon: 'fa:heartbeat', icon_align: left, role: filled-button, spacing_above: small, spacing_below: small, text: Health Check, tooltip: Run system diagnostics}
     type: Button
-  - layout_properties: {grid_position: 'ACTIONS,COL4', width_xs: 3}
-    event_bindings: {click: refresh_data_button_click}
+  - event_bindings: {click: refresh_data_button_click}
+    layout_properties: {grid_position: 'ACTIONS,COL4', width_xs: 3}
     name: refresh_data_button
-    properties: {align: center, font_size: 13, icon: 'fa:refresh', icon_align: left, role: secondary-color, spacing_above: small, spacing_below: small, text: 'Refresh Data', tooltip: 'Fetch weather and scrape events'}
+    properties: {align: center, font_size: 13, icon: 'fa:refresh', icon_align: left, role: secondary-color, spacing_above: small, spacing_below: small, text: Refresh Data, tooltip: Fetch weather and scrape events}
     type: Button
   layout_properties: {grid_position: 'QA_BUTTONS,FULL'}
   name: quick_actions_grid
   properties: {}
   type: ColumnPanel
-
-# API Testing Section
 - layout_properties: {grid_position: 'API_TITLE,FULL'}
   name: api_testing_title
-  properties: {align: left, bold: true, font_size: 14, icon: 'fa:plug', icon_align: left, spacing_above: medium, spacing_below: small, text: 'API Testing'}
+  properties: {align: left, bold: true, font_size: 14, icon: 'fa:plug', icon_align: left, spacing_above: medium, spacing_below: small, text: API Testing}
   type: Label
-
 - components:
-  - layout_properties: {grid_position: 'ROW1,COL1', width_xs: 3}
-    event_bindings: {click: test_openweather_button_click}
+  - event_bindings: {click: test_openweather_button_click}
+    layout_properties: {grid_position: 'ROW1,COL1', width_xs: 3}
     name: test_openweather_button
-    properties: {align: center, font_size: 12, icon: 'fa:cloud', icon_align: left, role: outlined-button, spacing_above: small, spacing_below: small, text: 'Weather API'}
+    properties: {align: center, font_size: 12, icon: 'fa:cloud', icon_align: left, role: outlined-button, spacing_above: small, spacing_below: small, text: Weather API}
     type: Button
-  - layout_properties: {grid_position: 'ROW1,COL2', width_xs: 3}
-    event_bindings: {click: test_firecrawl_button_click}
+  - event_bindings: {click: test_firecrawl_button_click}
+    layout_properties: {grid_position: 'ROW1,COL2', width_xs: 3}
     name: test_firecrawl_button
-    properties: {align: center, font_size: 12, icon: 'fa:bug', icon_align: left, role: outlined-button, spacing_above: small, spacing_below: small, text: 'Firecrawl API'}
+    properties: {align: center, font_size: 12, icon: 'fa:bug', icon_align: left, role: outlined-button, spacing_above: small, spacing_below: small, text: Firecrawl API}
     type: Button
-  - layout_properties: {grid_position: 'ROW1,COL3', width_xs: 3}
-    event_bindings: {click: test_scraping_only_button_click}
+  - event_bindings: {click: test_scraping_only_button_click}
+    layout_properties: {grid_position: 'ROW1,COL3', width_xs: 3}
     name: test_scraping_only_button
-    properties: {align: center, font_size: 12, icon: 'fa:search', icon_align: left, role: outlined-button, spacing_above: small, spacing_below: small, text: 'Scraping Only'}
+    properties: {align: center, font_size: 12, icon: 'fa:search', icon_align: left, role: outlined-button, spacing_above: small, spacing_below: small, text: Scraping Only}
     type: Button
-  - layout_properties: {grid_position: 'ROW1,COL4', width_xs: 3}
-    event_bindings: {click: test_openai_button_click}
+  - event_bindings: {click: test_openai_button_click}
+    layout_properties: {grid_position: 'ROW1,COL4', width_xs: 3}
     name: test_openai_button
-    properties: {align: center, font_size: 12, icon: 'fa:brain', icon_align: left, role: outlined-button, spacing_above: small, spacing_below: small, text: 'OpenAI API'}
+    properties: {align: center, font_size: 12, icon: 'fa:brain', icon_align: left, role: outlined-button, spacing_above: small, spacing_below: small, text: OpenAI API}
     type: Button
   layout_properties: {grid_position: 'API_BUTTONS,FULL'}
   name: api_testing_grid
   properties: {}
   type: ColumnPanel
-
-# Data Management Section
 - layout_properties: {grid_position: 'DATA_TITLE,FULL'}
   name: data_mgmt_title
-  properties: {align: left, bold: true, font_size: 14, icon: 'fa:database', icon_align: left, spacing_above: medium, spacing_below: small, text: 'Data Management'}
+  properties: {align: left, bold: true, font_size: 14, icon: 'fa:database', icon_align: left, spacing_above: medium, spacing_below: small, text: Data Management}
   type: Label
-
 - components:
-  - layout_properties: {grid_position: 'ROW1,COL1', width_xs: 3}
-    event_bindings: {click: check_status_button_click}
+  - event_bindings: {click: check_status_button_click}
+    layout_properties: {grid_position: 'ROW1,COL1', width_xs: 3}
     name: check_status_button
-    properties: {align: center, font_size: 12, icon: 'fa:list', icon_align: left, role: outlined-button, spacing_above: small, spacing_below: small, text: 'Check Status'}
+    properties: {align: center, font_size: 12, icon: 'fa:list', icon_align: left, role: outlined-button, spacing_above: small, spacing_below: small, text: Check Status}
     type: Button
-  - layout_properties: {grid_position: 'ROW1,COL2', width_xs: 3}
-    event_bindings: {click: view_refresh_log_button_click}
+  - event_bindings: {click: view_refresh_log_button_click}
+    layout_properties: {grid_position: 'ROW1,COL2', width_xs: 3}
     name: view_refresh_log_button
-    properties: {align: center, font_size: 12, icon: 'fa:file-text-o', icon_align: left, role: outlined-button, spacing_above: small, spacing_below: small, text: 'View Logs'}
+    properties: {align: center, font_size: 12, icon: 'fa:file-text-o', icon_align: left, role: outlined-button, spacing_above: small, spacing_below: small, text: View Logs}
     type: Button
-  - layout_properties: {grid_position: 'ROW1,COL3', width_xs: 3}
-    event_bindings: {click: load_test_events_button_click}
+  - event_bindings: {click: load_test_events_button_click}
+    layout_properties: {grid_position: 'ROW1,COL3', width_xs: 3}
     name: load_test_events_button
-    properties: {align: center, font_size: 12, icon: 'fa:flask', icon_align: left, role: outlined-button, spacing_above: small, spacing_below: small, text: 'Load Test Data'}
+    properties: {align: center, font_size: 12, icon: 'fa:flask', icon_align: left, role: outlined-button, spacing_above: small, spacing_below: small, text: Load Test Data}
     type: Button
-  - layout_properties: {grid_position: 'ROW1,COL4', width_xs: 3}
-    event_bindings: {click: clear_test_events_button_click}
+  - event_bindings: {click: clear_test_events_button_click}
+    layout_properties: {grid_position: 'ROW1,COL4', width_xs: 3}
     name: clear_test_events_button
-    properties: {align: center, font_size: 12, icon: 'fa:eraser', icon_align: left, role: outlined-button, spacing_above: small, spacing_below: small, text: 'Clear Test Data'}
+    properties: {align: center, font_size: 12, icon: 'fa:eraser', icon_align: left, role: outlined-button, spacing_above: small, spacing_below: small, text: Clear Test Data}
     type: Button
-  - layout_properties: {grid_position: 'ROW2,COL4', width_xs: 3}
-    event_bindings: {click: clear_data_button_click}
+  - event_bindings: {click: clear_data_button_click}
+    layout_properties: {grid_position: 'ROW2,COL4', width_xs: 3}
     name: clear_data_button
-    properties: {align: center, font_size: 12, foreground: '#d32f2f', icon: 'fa:trash', icon_align: left, role: outlined-button, spacing_above: small, spacing_below: small, text: 'Clear All Data', tooltip: '⚠️ DANGER: Deletes everything!'}
+    properties: {align: center, font_size: 12, foreground: '#d32f2f', icon: 'fa:trash', icon_align: left, role: outlined-button, spacing_above: small, spacing_below: small, text: Clear All Data, tooltip: '⚠️ DANGER: Deletes everything!'}
     type: Button
   layout_properties: {grid_position: 'DATA_BUTTONS,FULL'}
   name: data_mgmt_grid
   properties: {}
   type: ColumnPanel
-
-# Divider
 - layout_properties: {grid_position: 'DIVIDER,LINE'}
   name: divider
-  properties: {height: 1, background: '#ddd', spacing_above: medium, spacing_below: small}
+  properties: {background: '#ddd', height: 1, spacing_above: medium, spacing_below: small}
   type: Spacer
-
-# Output Console Section
 - layout_properties: {grid_position: 'OUTPUT_TITLE,FULL'}
   name: output_label
-  properties: {align: left, bold: true, font_size: 14, icon: 'fa:terminal', icon_align: left, spacing_above: small, spacing_below: small, text: 'Output Console'}
+  properties: {align: left, bold: true, font_size: 14, icon: 'fa:terminal', icon_align: left, spacing_above: small, spacing_below: small, text: Output Console}
   type: Label
-
 - layout_properties: {grid_position: 'OUTPUT_CONTENT,FULL'}
   name: status_output
-  properties: {auto_expand: false, background: '#f9f9f9', border: '1px solid #ccc', font: monospace, font_size: 12, height: 350, placeholder: 'Status output will appear here...', spacing_above: small, spacing_below: small}
+  properties: {auto_expand: false, background: '#f9f9f9', border: '1px solid #ccc', font: monospace, font_size: 12, height: 350, placeholder: Status output will appear here..., spacing_above: small, spacing_below: small}
   type: TextArea
-
-# Footer
 - layout_properties: {grid_position: 'FOOTER,INFO'}
   name: footer_label
   properties: {align: center, font_size: 11, foreground: '#999999', icon: 'fa:info-circle', icon_align: left, italic: true, spacing_above: small, spacing_below: small, text: 'Documentation: USER_GUIDE.md | DEPLOYMENT_GUIDE.md'}
   type: Label
-
 container:
   properties: {col_widths: '{}'}
   type: ColumnPanel
