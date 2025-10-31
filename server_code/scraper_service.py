@@ -1,6 +1,9 @@
 """
 Web scraping service module for This Weekend app.
 Handles integration with Firecrawl API for event data collection.
+
+This module tries to use the Firecrawl Python SDK for reliability,
+with automatic fallback to raw HTTP if the SDK is not available.
 """
 
 import anvil.server
@@ -11,6 +14,17 @@ import re
 
 from . import config
 from . import api_helpers
+
+# Try to import Firecrawl Python SDK (more reliable)
+try:
+    from firecrawl import Firecrawl
+    FIRECRAWL_SDK_AVAILABLE = True
+    print("✅ Firecrawl Python SDK available - using SDK mode")
+except ImportError:
+    FIRECRAWL_SDK_AVAILABLE = False
+    print("⚠️ Firecrawl SDK not installed - using fallback HTTP mode")
+    print("   Install with: pip install firecrawl-py")
+    print("   See server_code/requirements.txt for instructions")
 
 # Import direct scraper for fallback
 try:
@@ -55,6 +69,7 @@ def scrape_weekend_events():
 def scrape_with_firecrawl():
     """
     Scrape using Firecrawl API.
+    Tries to use the Python SDK first, falls back to raw HTTP if SDK unavailable.
     
     Returns:
         str: Markdown content from Firecrawl
@@ -67,7 +82,82 @@ def scrape_with_firecrawl():
     # Get API key
     api_key = api_helpers.get_api_key("FIRECRAWL_API_KEY")
     
-    # Firecrawl API v2 endpoint (updated from v1)
+    # Try SDK first if available (more reliable)
+    if FIRECRAWL_SDK_AVAILABLE:
+        try:
+            return scrape_with_firecrawl_sdk(api_key)
+        except Exception as sdk_error:
+            print(f"  ⚠️ SDK method failed: {str(sdk_error)[:200]}")
+            print("  🔄 Falling back to raw HTTP method...")
+            # Continue to raw HTTP fallback below
+    
+    # Fallback to raw HTTP
+    return scrape_with_firecrawl_http(api_key)
+
+
+def scrape_with_firecrawl_sdk(api_key):
+    """
+    Scrape using Firecrawl Python SDK (recommended method).
+    
+    Args:
+        api_key: Firecrawl API key
+        
+    Returns:
+        str: Markdown content from Firecrawl
+        
+    Raises:
+        Exception: If scraping fails
+    """
+    print("  🚀 Using Firecrawl Python SDK (recommended)")
+    
+    try:
+        # Initialize Firecrawl client
+        firecrawl = Firecrawl(api_key=api_key)
+        
+        # Scrape the URL
+        # SDK handles stealth mode and all the complexity automatically
+        print(f"  Scraping {config.TARGET_WEBSITE_URL}...")
+        result = firecrawl.scrape(
+            url=config.TARGET_WEBSITE_URL,
+            formats=['markdown', 'html']
+        )
+        
+        # SDK returns a Document object with markdown, html, metadata properties
+        if hasattr(result, 'markdown') and result.markdown:
+            markdown_content = result.markdown
+            print(f"  ✅ SDK scrape successful: {len(markdown_content)} characters")
+            
+            # Log metadata if available
+            if hasattr(result, 'metadata'):
+                metadata = result.metadata
+                print(f"  Page title: {metadata.get('title', 'Unknown')}")
+                print(f"  Status code: {metadata.get('statusCode', 'Unknown')}")
+            
+            return markdown_content
+        else:
+            raise Exception("SDK returned no markdown content")
+            
+    except Exception as e:
+        print(f"  ❌ SDK error: {str(e)}")
+        raise
+
+
+def scrape_with_firecrawl_http(api_key):
+    """
+    Scrape using raw HTTP requests to Firecrawl API (fallback method).
+    
+    Args:
+        api_key: Firecrawl API key
+        
+    Returns:
+        str: Markdown content from Firecrawl
+        
+    Raises:
+        Exception: If scraping fails
+    """
+    print("  📡 Using raw HTTP method (fallback)")
+    
+    # Firecrawl API v2 endpoint
     url = "https://api.firecrawl.dev/v2/scrape"
     
     headers = {
@@ -75,7 +165,7 @@ def scrape_with_firecrawl():
         "Content-Type": "application/json"
     }
     
-    # Updated payload format for Firecrawl v2 with Stealth Mode
+    # Payload format for Firecrawl v2 with Stealth Mode
     # Reference: https://docs.firecrawl.dev/features/scrape
     # Stealth mode bypasses Cloudflare protection
     payload = {

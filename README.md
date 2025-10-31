@@ -39,16 +39,19 @@ thisweekend/
 ├── IMPLEMENTATION_SUMMARY.md          # ⭐ What's been built
 ├── NEXT_STEPS.md                      # ⭐ Your next actions
 ├── SERVER_FUNCTIONS_REFERENCE.md     # Complete API reference
+├── SDK_SETUP_GUIDE.md                 # 📚 SDK installation & setup guide
+├── QUICK_SDK_SUMMARY.md               # 📝 TL;DR for SDK setup
+├── SDK_ARCHITECTURE_DIAGRAM.md        # 🏗️ How SDK/HTTP fallback works
 ├── setup_data_tables.py               # Table setup helper script
 ├── server_code/                       # ✅ All 7 server modules (COMPLETE)
 │   ├── config.py                      # Configuration constants
 │   ├── weather_service.py             # OpenWeather API integration
-│   ├── scraper_service.py             # Firecrawl integration
-│   ├── ai_service.py                  # OpenAI ChatGPT integration
+│   ├── scraper_service.py             # Firecrawl integration (SDK + HTTP)
+│   ├── ai_service.py                  # OpenAI integration (SDK + HTTP)
 │   ├── data_processor.py              # Recommendation engine
 │   ├── background_tasks.py            # Task orchestration
 │   ├── api_helpers.py                 # Common utilities
-│   └── requirements.txt               # Dependencies list
+│   └── requirements.txt               # 📦 Dependencies (now uncommented!)
 └── client_code/                       # Anvil client forms (to be created)
     └── Form1/                         # Main form (basic structure)
 ```
@@ -95,7 +98,13 @@ You've completed:
 ### 🌟 Start Here
 - **[GITHUB_SYNC_GUIDE.md](GITHUB_SYNC_GUIDE.md)** ⚡ **NEW!** - How to deploy your AdminForm
 - **[ADMIN_TOOLS_GUIDE.md](ADMIN_TOOLS_GUIDE.md)** - Admin functions reference
+- **[QUICK_SDK_SUMMARY.md](QUICK_SDK_SUMMARY.md)** 🆕 **NEW!** - TL;DR SDK setup (read this first!)
 - **[IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)** - What's been built
+
+### SDK & API Setup
+- **[SDK_SETUP_GUIDE.md](SDK_SETUP_GUIDE.md)** 📚 **NEW!** - Complete SDK installation guide
+- **[SDK_ARCHITECTURE_DIAGRAM.md](SDK_ARCHITECTURE_DIAGRAM.md)** 🏗️ **NEW!** - How SDK/HTTP works
+- **[server_code/requirements.txt](server_code/requirements.txt)** 📦 **UPDATED!** - Dependencies
 
 ### Reference
 - **[SERVER_FUNCTIONS_REFERENCE.md](SERVER_FUNCTIONS_REFERENCE.md)** - Complete API reference

@@ -1,6 +1,9 @@
 """
 AI service module for This Weekend app.
 Handles integration with OpenAI ChatGPT API for event analysis.
+
+This module tries to use the OpenAI Python SDK for reliability,
+with automatic fallback to raw HTTP if the SDK is not available.
 """
 
 import anvil.server
@@ -12,6 +15,17 @@ import time
 from . import config
 from . import api_helpers
 
+# Try to import OpenAI Python SDK (more reliable)
+try:
+    from openai import OpenAI
+    OPENAI_SDK_AVAILABLE = True
+    print("✅ OpenAI Python SDK available - using SDK mode")
+except ImportError:
+    OPENAI_SDK_AVAILABLE = False
+    print("⚠️ OpenAI SDK not installed - using fallback HTTP mode")
+    print("   Install with: pip install openai")
+    print("   See server_code/requirements.txt for instructions")
+
 
 def analyze_event(event):
     """
@@ -20,6 +34,8 @@ def analyze_event(event):
     - Audience type
     - Categories
     - Cost level refinement
+    
+    Tries to use OpenAI SDK first, falls back to raw HTTP if SDK unavailable.
     
     Args:
         event: Event dictionary with title, description, location
@@ -32,6 +48,81 @@ def analyze_event(event):
     
     # Build the prompt
     prompt = build_analysis_prompt(event)
+    
+    # Try SDK first if available (more reliable)
+    if OPENAI_SDK_AVAILABLE:
+        try:
+            return analyze_event_with_sdk(api_key, event, prompt)
+        except Exception as sdk_error:
+            print(f"  ⚠️ SDK method failed: {str(sdk_error)[:200]}")
+            print("  🔄 Falling back to raw HTTP method...")
+            # Continue to raw HTTP fallback below
+    
+    # Fallback to raw HTTP
+    return analyze_event_with_http(api_key, event, prompt)
+
+
+def analyze_event_with_sdk(api_key, event, prompt):
+    """
+    Analyze event using OpenAI Python SDK (recommended method).
+    
+    Args:
+        api_key: OpenAI API key
+        event: Event dictionary
+        prompt: Analysis prompt
+        
+    Returns:
+        dict: Analysis results
+    """
+    print(f"  🚀 Using OpenAI SDK for event: {event.get('title', 'Unknown')}")
+    
+    try:
+        # Initialize OpenAI client
+        client = OpenAI(api_key=api_key)
+        
+        # Make API call
+        response = client.chat.completions.create(
+            model=config.OPENAI_MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are an event categorization assistant. Analyze events and return structured JSON data."
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            temperature=config.OPENAI_TEMPERATURE,
+            max_tokens=config.OPENAI_MAX_TOKENS,
+            response_format={"type": "json_object"}
+        )
+        
+        # Extract and parse response
+        content = response.choices[0].message.content
+        analysis = json.loads(content)
+        
+        print(f"  ✅ SDK analysis successful")
+        return analysis
+        
+    except Exception as e:
+        print(f"  ❌ SDK error: {str(e)}")
+        raise
+
+
+def analyze_event_with_http(api_key, event, prompt):
+    """
+    Analyze event using raw HTTP requests to OpenAI API (fallback method).
+    
+    Args:
+        api_key: OpenAI API key
+        event: Event dictionary
+        prompt: Analysis prompt
+        
+    Returns:
+        dict: Analysis results
+    """
+    print(f"  📡 Using raw HTTP for event: {event.get('title', 'Unknown')}")
     
     # OpenAI API endpoint
     url = "https://api.openai.com/v1/chat/completions"

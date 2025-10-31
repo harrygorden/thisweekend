@@ -1,25 +1,46 @@
 # This Weekend - Server Code Dependencies
 # 
-# Note: Most dependencies are built into Anvil's server environment.
-# This file documents what's used for reference and local testing.
+# For Anvil Uplink (local development) or Third-Party Package support
 
-# Anvil libraries (automatically available in Anvil server environment)
+# Required third-party packages:
+firecrawl-py>=1.0.0        # Firecrawl Python SDK (more reliable than raw HTTP)
+openai>=1.0.0              # OpenAI Python SDK
+
+# For local testing with Anvil Uplink:
+anvil-uplink
+
+# ============================================================================
+# INSTALLATION INSTRUCTIONS:
+# ============================================================================
+#
+# Option 1: Anvil Uplink (Local Development) - RECOMMENDED FOR DEVELOPMENT
+# ------------------------------------------------------------------------
+# 1. Install dependencies locally:
+#    pip install -r server_code/requirements.txt
+# 
+# 2. Run Anvil Uplink:
+#    python -m anvil.uplink --server-url <YOUR-UPLINK-URL>
+#
+# 3. Your local Python environment will handle all server calls
+#    (with full access to firecrawl-py and openai packages)
+#
+# Option 2: Anvil Hosted Environment (Production)
+# ------------------------------------------------
+# 1. In Anvil: App Settings → Dependencies
+# 2. Request third-party packages: firecrawl-py, openai
+# 3. Wait for Anvil team approval (or use fallback raw HTTP)
+#
+# ============================================================================
+# BUILT-IN ANVIL LIBRARIES (always available):
+# ============================================================================
 # - anvil.server
 # - anvil.http
 # - anvil.tables
 # - anvil.secrets
-
-# Standard library modules used:
+# 
+# STANDARD LIBRARY (always available):
 # - json
 # - datetime
 # - time
 # - re
-
-# External API integrations (accessed via anvil.http, no separate packages needed):
-# - OpenWeather One Call API 3.0
-# - Firecrawl API
-# - OpenAI API
-
-# For local testing with Anvil Uplink (optional):
-# anvil-uplink
 
