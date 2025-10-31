@@ -47,6 +47,70 @@ def check_database_status():
 
 
 @anvil.server.callable
+def test_scraping_only():
+    """
+    Test scraping and parsing events WITHOUT AI analysis.
+    Perfect for troubleshooting Firecrawl without paying for OpenAI API calls.
+    
+    Returns:
+        dict: Scraping results with detailed debug info
+    """
+    from . import scraper_service
+    from datetime import datetime
+    
+    result = {
+        'timestamp': datetime.now(),
+        'status': 'unknown',
+        'events': [],
+        'debug_info': {}
+    }
+    
+    try:
+        # Step 1: Scrape the website
+        print("\n" + "="*60)
+        print("🔍 TEST SCRAPING ONLY (No AI Analysis)")
+        print("="*60)
+        print("\n[1/2] Scraping website...")
+        
+        markdown_content = scraper_service.scrape_weekend_events()
+        result['debug_info']['markdown_length'] = len(markdown_content)
+        result['debug_info']['markdown_preview'] = markdown_content[:500]
+        
+        # Step 2: Parse events
+        print("\n[2/2] Parsing events...")
+        events = scraper_service.parse_events_from_markdown(markdown_content)
+        
+        # Convert events to serializable format
+        result['events'] = [
+            {
+                'title': e.get('title', ''),
+                'location': e.get('location', ''),
+                'start_time': e.get('start_time', ''),
+                'cost_raw': e.get('cost_raw', ''),
+                'date': str(e.get('date', '')),
+                'source_url': e.get('source_url', '')
+            }
+            for e in events
+        ]
+        
+        result['status'] = 'success'
+        result['event_count'] = len(events)
+        
+        print(f"\n✅ Scraping test complete!")
+        print(f"   Found {len(events)} events")
+        print("="*60 + "\n")
+        
+        return result
+        
+    except Exception as e:
+        result['status'] = 'error'
+        result['error'] = str(e)
+        print(f"\n❌ Scraping test failed: {str(e)}")
+        print("="*60 + "\n")
+        return result
+
+
+@anvil.server.callable
 def get_system_info():
     """
     Get general system information and status.

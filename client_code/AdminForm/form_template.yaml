@@ -68,6 +68,11 @@ components:
     name: test_firecrawl_button
     properties: {align: center, background: '', bold: false, border: '', enabled: true, font: '', font_size: null, foreground: '', icon: 'fa:bug', icon_align: left, italic: false, role: outlined-button, spacing_above: small, spacing_below: small, text: Test Firecrawl API, tooltip: Test Firecrawl API with multiple scenarios, underline: false, visible: true}
     type: Button
+  - event_bindings: {click: test_scraping_only_button_click}
+    layout_properties: {}
+    name: test_scraping_only_button
+    properties: {align: center, background: '', bold: false, border: '', enabled: true, font: '', font_size: null, foreground: '', icon: 'fa:search', icon_align: left, italic: false, role: outlined-button, spacing_above: small, spacing_below: small, text: Test Scraping Only, tooltip: 'Scrape & parse events WITHOUT AI analysis (saves $$$ on API calls!)', underline: false, visible: true}
+    type: Button
   - event_bindings: {click: test_openai_button_click}
     layout_properties: {}
     name: test_openai_button

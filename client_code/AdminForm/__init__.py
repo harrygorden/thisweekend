@@ -350,6 +350,75 @@ class AdminForm(AdminFormTemplate):
             alert(f"❌ Test failed:\n{str(e)}", title="Error")
     
     
+    def test_scraping_only_button_click(self, **event_args):
+        """Test scraping and parsing WITHOUT AI analysis (saves $$$ on API calls!)"""
+        self.status_output.text = "🔍 Testing Scraping Only (No AI)...\n\n"
+        self.status_output.text += "This will scrape and parse events WITHOUT running AI analysis.\n"
+        self.status_output.text += "Perfect for troubleshooting Firecrawl!\n\n"
+        self.test_scraping_only_button.enabled = False
+        
+        try:
+            # Call server-side test function
+            result = anvil.server.call('test_scraping_only')
+            
+            # Build output
+            output = "="*50 + "\n"
+            output += "SCRAPING TEST (No AI Analysis)\n"
+            output += "="*50 + "\n\n"
+            
+            if result['status'] == 'success':
+                output += f"✅ SUCCESS!\n\n"
+                output += f"Scraped: {result['debug_info']['markdown_length']:,} characters\n"
+                output += f"Events found: {result['event_count']}\n\n"
+                
+                # Show preview of markdown
+                output += "Markdown Preview (first 500 chars):\n"
+                output += "-"*50 + "\n"
+                output += result['debug_info']['markdown_preview']
+                output += "\n" + "-"*50 + "\n\n"
+                
+                # Show parsed events
+                if result['events']:
+                    output += f"Parsed Events ({len(result['events'])}):\n"
+                    output += "-"*50 + "\n"
+                    for i, event in enumerate(result['events'][:10], 1):  # Show first 10
+                        output += f"\n{i}. {event['title']}\n"
+                        output += f"   Location: {event['location']}\n"
+                        output += f"   Time: {event['start_time']}\n"
+                        output += f"   Cost: {event['cost_raw']}\n"
+                        output += f"   Date: {event['date']}\n"
+                        output += f"   URL: {event['source_url'][:60]}...\n"
+                    
+                    if len(result['events']) > 10:
+                        output += f"\n... and {len(result['events']) - 10} more events\n"
+                else:
+                    output += "⚠️ No events found\n"
+                    output += "Check the debug output in the console for parsing details.\n"
+                
+                output += "\n" + "="*50 + "\n"
+                
+                self.status_output.text = output
+                
+                if result['event_count'] > 0:
+                    alert(f"✅ Scraping successful!\n\nFound {result['event_count']} events without using AI analysis.", title="Scraping Test")
+                else:
+                    alert(f"⚠️ Scraping completed but found 0 events.\n\nCheck the console output for parser debugging info.", title="Scraping Test")
+            else:
+                output += f"❌ FAILED!\n\n"
+                output += f"Error: {result.get('error', 'Unknown')}\n\n"
+                output += "Check the console output for detailed error information.\n"
+                
+                self.status_output.text = output
+                alert(f"❌ Scraping failed:\n\n{result.get('error', 'Unknown')}", title="Scraping Test Failed")
+            
+        except Exception as e:
+            self.status_output.text = f"❌ Test failed: {str(e)}\n\n{traceback.format_exc()}"
+            alert(f"❌ Test failed:\n{str(e)}", title="Error")
+        
+        finally:
+            self.test_scraping_only_button.enabled = True
+    
+    
     def test_openai_button_click(self, **event_args):
         """Test OpenAI API"""
         self.status_output.text = "🤖 Testing OpenAI API...\n\n"
