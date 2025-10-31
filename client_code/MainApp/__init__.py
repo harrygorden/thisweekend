@@ -81,9 +81,20 @@ class MainApp(MainAppTemplate):
                 
                 # Create weather cards for first 3 days (Friday, Saturday, Sunday)
                 for i, day_weather in enumerate(weather_data[:3]):
-                    weather_card = WeatherCard()
-                    weather_card.set_weather_data(day_weather)
-                    self.weather_container.add_component(weather_card)
+                    try:
+                        weather_card = WeatherCard()
+                        weather_card.set_weather_data(day_weather)
+                        self.weather_container.add_component(weather_card)
+                    except Exception as card_error:
+                        print(f"Error creating WeatherCard: {card_error}")
+                        # Show fallback text if WeatherCard component isn't ready
+                        fallback_label = Label(
+                            text=f"{day_weather.get('day_name', 'Unknown')}: {int(day_weather.get('temp_high', 0))}°F / {int(day_weather.get('temp_low', 0))}°F - {day_weather.get('conditions', 'Unknown')}",
+                            font_size=14,
+                            spacing_above="small",
+                            spacing_below="small"
+                        )
+                        self.weather_container.add_component(fallback_label)
                 
                 # Update summary text
                 if len(weather_data) >= 3:
@@ -185,15 +196,27 @@ class MainApp(MainAppTemplate):
         
         # Create event cards
         for event in self.filtered_events:
-            event_card = EventCard()
-            event_card.set_event_data(event)
-            
-            # Check if event is in itinerary
-            if event['event_id'] in self.selected_event_ids:
-                event_card.is_selected = True
-                event_card.update_favorite_button()
-            
-            self.events_container.add_component(event_card)
+            try:
+                event_card = EventCard()
+                event_card.set_event_data(event)
+                
+                # Check if event is in itinerary
+                if event['event_id'] in self.selected_event_ids:
+                    event_card.is_selected = True
+                    event_card.update_favorite_button()
+                
+                self.events_container.add_component(event_card)
+            except Exception as card_error:
+                print(f"Error creating EventCard: {card_error}")
+                # Show fallback simple event display
+                fallback_label = Label(
+                    text=f"📅 {event.get('title', 'Event')} - {event.get('day_name', 'TBD')} @ {event.get('start_time', 'TBD')}",
+                    font_size=14,
+                    spacing_above="small",
+                    spacing_below="small",
+                    bold=True
+                )
+                self.events_container.add_component(fallback_label)
     
     
     def update_event_count(self):
