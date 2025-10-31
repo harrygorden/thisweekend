@@ -477,19 +477,50 @@ def extract_details_from_event_page(markdown):
     
     lines = markdown.split('\n')
     description_lines = []
+    in_description_section = False
+    
+    # Navigation links to skip (they appear at top of event pages)
+    nav_skip_patterns = [
+        r'skip to content',
+        r'^\[calendar\]',
+        r'^\[visit website\]',
+        r'^\[get tickets\]',
+        r'^\[share\]',
+        r'^\[tweet\]',
+        r'^!\[',  # Image markdown
+    ]
     
     for line in lines:
         line = line.strip()
         if not line:
             continue
         
+        # Skip navigation links
+        if any(re.search(pattern, line, re.IGNORECASE) for pattern in nav_skip_patterns):
+            continue
+        
+        # Skip if it's a markdown link on its own line (likely navigation)
+        if re.match(r'^\[.+\]\(.+\)$', line):
+            # But keep it if it's part of a longer sentence
+            if len(line) > 100:
+                pass  # Keep long lines with links embedded
+            else:
+                continue  # Skip short standalone links
+        
         # Look for location patterns
         if re.search(r'\*\*Location\*\*:?\s*(.+)', line, re.IGNORECASE):
             match = re.search(r'\*\*Location\*\*:?\s*(.+)', line, re.IGNORECASE)
-            details['location'] = match.group(1).strip()
+            location_text = match.group(1).strip()
+            # Remove any markdown links from location
+            location_text = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', location_text)
+            details['location'] = location_text
+            continue
         elif re.search(r'\*\*Venue\*\*:?\s*(.+)', line, re.IGNORECASE):
             match = re.search(r'\*\*Venue\*\*:?\s*(.+)', line, re.IGNORECASE)
-            details['location'] = match.group(1).strip()
+            venue_text = match.group(1).strip()
+            venue_text = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', venue_text)
+            details['location'] = venue_text
+            continue
         
         # Look for time patterns
         if re.search(r'\*\*Time\*\*:?\s*(.+)', line, re.IGNORECASE):
@@ -499,15 +530,16 @@ def extract_details_from_event_page(markdown):
             time_match = re.search(r'(\d{1,2}(?::\d{2})?\s*(?:a\.m\.|p\.m\.|am|pm))', time_text, re.IGNORECASE)
             if time_match:
                 details['start_time'] = time_match.group(1)
+            continue
         
         # Look for cost/price patterns
-        if re.search(r'\*\*(Cost|Price|Admission)\*\*:?\s*(.+)', line, re.IGNORECASE):
-            match = re.search(r'\*\*(Cost|Price|Admission)\*\*:?\s*(.+)', line, re.IGNORECASE)
-            details['cost_raw'] = match.group(2).strip()
-        elif re.search(r'\$\d+', line) and not details['cost_raw']:
-            details['cost_raw'] = line
-        elif re.search(r'\bfree\b', line, re.IGNORECASE) and not details['cost_raw']:
-            details['cost_raw'] = line
+        if re.search(r'\*\*(Cost|Price|Admission|Tickets?)\*\*:?\s*(.+)', line, re.IGNORECASE):
+            match = re.search(r'\*\*(Cost|Price|Admission|Tickets?)\*\*:?\s*(.+)', line, re.IGNORECASE)
+            cost_text = match.group(2).strip()
+            # Remove markdown links
+            cost_text = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', cost_text)
+            details['cost_raw'] = cost_text
+            continue
         
         # Look for date patterns
         if re.search(r'\*\*Date\*\*:?\s*(.+)', line, re.IGNORECASE):
@@ -516,14 +548,34 @@ def extract_details_from_event_page(markdown):
             parsed_date = api_helpers.parse_date_string(date_text)
             if parsed_date:
                 details['date'] = parsed_date
+            continue
         
-        # Collect description (non-metadata lines)
-        if not line.startswith('**') and len(line) > 20:
-            description_lines.append(line)
+        # Start collecting description after we see a heading or after metadata
+        # Main event description usually starts after ## heading or after metadata fields
+        if line.startswith('# ') and not in_description_section:
+            in_description_section = True
+            continue
+        
+        # Collect description lines (skip metadata and navigation)
+        if in_description_section:
+            # Skip lines that are just metadata or structural elements
+            if line.startswith('**'):
+                continue
+            # Skip lines that are mostly links
+            if line.count('[') > 2:
+                continue
+            # Keep substantial text lines
+            if len(line) > 30 and not line.startswith('!'):
+                # Remove any embedded markdown links, keep just text
+                clean_line = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', line)
+                description_lines.append(clean_line)
     
     # Build description from collected lines
     if description_lines:
-        details['description'] = ' '.join(description_lines[:5])  # First 5 lines
+        details['description'] = ' '.join(description_lines[:3])  # First 3 substantial lines
+        # Limit to reasonable length
+        if len(details['description']) > 500:
+            details['description'] = details['description'][:500] + '...'
     
     return details
 
@@ -604,14 +656,15 @@ def parse_event_link_text(link_text, link_url, current_day, weekend_dates):
         detailed_info = scrape_event_details_from_url(link_url, api_key)
         
         if detailed_info:
-            # Override with better data from event page (if available)
+            # Override with better data from event page (if available and non-empty)
             if detailed_info.get('location'):
                 event["location"] = detailed_info['location']
             if detailed_info.get('start_time'):
                 event["start_time"] = api_helpers.parse_time_string(detailed_info['start_time'])
             if detailed_info.get('cost_raw'):
                 event["cost_raw"] = detailed_info['cost_raw']
-            if detailed_info.get('description'):
+            if detailed_info.get('description') and len(detailed_info['description']) > 20:
+                # Only use event page description if it's substantial and clean
                 event["description"] = detailed_info['description']
             if detailed_info.get('date'):
                 event["date"] = detailed_info['date']
