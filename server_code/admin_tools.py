@@ -551,10 +551,12 @@ def _test_firecrawl_url(api_key, url, use_stealth=False):
     return result
 
 
-@anvil.server.callable
-def create_test_events():
+# Note: create_test_events and clear_test_events are defined in test_data.py
+# These are wrapper functions for backwards compatibility with admin forms
+def create_test_events_wrapper():
     """
     Create realistic test events for UI testing without using external APIs.
+    Wrapper for test_data.create_test_events() (use that directly instead)
     
     Returns:
         int: Number of test events created
@@ -563,23 +565,14 @@ def create_test_events():
     return test_data.create_test_events()
 
 
-@anvil.server.callable
-def clear_test_events():
+def clear_test_events_wrapper():
     """
     Clear only test events (identified by special ID pattern).
+    Wrapper for test_data.clear_test_events() (use that directly instead)
     
     Returns:
         int: Number of test events deleted
     """
-    from anvil.tables import app_tables
-    
-    count = 0
-    for event in app_tables.events.search():
-        # Test events have IDs starting with 'test_'
-        if event['event_id'] and event['event_id'].startswith('test_'):
-            event.delete()
-            count += 1
-    
-    print(f"Deleted {count} test events")
-    return count
+    from . import test_data
+    return test_data.clear_test_events()
 

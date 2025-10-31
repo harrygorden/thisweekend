@@ -471,5 +471,5 @@ class MainApp(MainAppTemplate):
     def refresh_button_click(self, **event_args):
         """Refresh data from server"""
         self.load_initial_data()
-        Notification("Data refreshed!").show()
+        alert("Data refreshed!", title="Success")
 

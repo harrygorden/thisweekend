@@ -30,6 +30,11 @@ class WeatherCard(WeatherCardTemplate):
         if not weather:
             return
         
+        # Check if components are initialized
+        if not hasattr(self, 'day_label'):
+            print("Warning: WeatherCard components not initialized yet")
+            return
+        
         # Day name
         self.day_label.text = weather.get('day_name', 'Unknown')
         
