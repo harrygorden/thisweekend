@@ -279,16 +279,19 @@ def analyze_all_events(events):
     Returns:
         dict: Event ID to analysis mapping
     """
-    print(f"Analyzing {len(events)} events with AI...")
+    total = len(events)
+    print(f"Analyzing {total} events with AI (showing progress at 25%, 50%, 75%, 100%)...")
     
     analyses = {}
+    milestones = [int(total * 0.25), int(total * 0.5), int(total * 0.75), total]
     
     for i, event in enumerate(events):
         event_id = event["event_id"]
         
-        # Show progress every 10 events or on first/last event
-        if i == 0 or (i + 1) % 10 == 0 or i == len(events) - 1:
-            print(f"  Progress: {i+1}/{len(events)} events analyzed")
+        # Show progress only at key milestones: 25%, 50%, 75%, 100%
+        if (i + 1) in milestones:
+            percent = int(((i + 1) / total) * 100)
+            print(f"  ✓ {percent}% complete ({i+1}/{total})")
         
         # Prepare event data for analysis
         event_data = {

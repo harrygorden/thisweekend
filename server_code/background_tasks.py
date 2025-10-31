@@ -56,50 +56,54 @@ def scheduled_refresh_all_data():
     
     try:
         # Step 1: Clean up old data
-        print("[Step 1/10] Cleaning up old data...")
+        print("[1/10] Cleanup...")
         cleanup_old_data()
-        print("  ✓ Cleanup complete")
+        print("  ✓ Done")
         
         # Step 2: Fetch weather forecast
-        print("[Step 2/10] Fetching weekend weather...")
+        print("[2/10] Weather...")
         weather_data = weather_service.fetch_weekend_weather()
-        print(f"  ✓ Fetched weather for {len(weather_data)} days")
+        print(f"  ✓ {len(weather_data)} days")
         
         # Step 3: Save weather to database
-        print("[Step 3/10] Saving weather data...")
+        print("[3/10] Save weather...")
         weather_service.save_weather_to_db(weather_data)
-        print("  ✓ Weather data saved")
+        print("  ✓ Done")
         
         # Step 4: Scrape weekend events
-        print("\n[Step 4/9] Scraping weekend events...")
+        print("[4/10] Scrape events...")
         markdown_content = scraper_service.scrape_weekend_events()
         
         # Step 5: Parse events from markdown
-        print("\n[Step 5/9] Parsing events...")
+        print("[5/10] Parse events...")
         events = scraper_service.parse_events_from_markdown(markdown_content)
         log_entry["events_found"] = len(events)
+        print(f"  ✓ Found {len(events)} events")
         
         # Step 6: Save events to database
-        print("\n[Step 6/9] Saving events to database...")
+        print("[6/10] Save to DB...")
         saved_count = scraper_service.save_events_to_db(events)
         
         # Step 7: Analyze events with AI
-        print("\n[Step 7/9] Analyzing events with AI...")
+        print("[7/10] AI analysis...")
         db_events = list(app_tables.events.search())
         analyses = ai_service.analyze_all_events(db_events)
         
         # Step 8: Update events with AI analysis
-        print("\n[Step 8/9] Updating events with AI analysis...")
+        print("[8/10] Update DB with AI results...")
         analyzed_count = ai_service.update_events_with_analysis(analyses)
         log_entry["events_analyzed"] = analyzed_count
+        print(f"  ✓ Analyzed {analyzed_count} events")
         
         # Step 9: Match events with weather
-        print("\n[Step 9/9] Matching events with weather and calculating scores...")
+        print("[9/10] Match with weather...")
         data_processor.match_events_with_weather()
+        print("  ✓ Done")
         
         # Step 10: Calculate recommendation scores
-        print("\n[Step 10/9] Calculating final recommendation scores...")
+        print("[10/10] Calculate scores...")
         data_processor.update_all_recommendation_scores()
+        print("  ✓ Done")
         
         # Calculate duration
         end_time = datetime.now()

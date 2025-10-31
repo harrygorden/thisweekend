@@ -108,15 +108,9 @@ def scrape_with_firecrawl_sdk(api_key):
     Raises:
         Exception: If scraping fails
     """
-    print("  🚀 Using Firecrawl Python SDK (recommended)")
-    
     try:
-        # Initialize Firecrawl client
+        # Initialize Firecrawl client and scrape (SDK handles stealth mode automatically)
         firecrawl = Firecrawl(api_key=api_key)
-        
-        # Scrape the URL
-        # SDK handles stealth mode and all the complexity automatically
-        print(f"  Scraping {config.TARGET_WEBSITE_URL}...")
         result = firecrawl.scrape(
             url=config.TARGET_WEBSITE_URL,
             formats=['markdown', 'html']
@@ -125,17 +119,14 @@ def scrape_with_firecrawl_sdk(api_key):
         # SDK returns a Document object with markdown, html, metadata properties
         if hasattr(result, 'markdown') and result.markdown:
             markdown_content = result.markdown
-            print(f"  ✅ SDK scrape successful: {len(markdown_content)} characters")
             
-            # Log metadata if available (metadata is an object, not a dict)
+            # Get page title for confirmation
+            title = "Unknown"
             if hasattr(result, 'metadata') and result.metadata:
                 metadata = result.metadata
-                # Access metadata attributes directly (not dictionary keys)
                 title = getattr(metadata, 'title', 'Unknown')
-                status_code = getattr(metadata, 'statusCode', getattr(metadata, 'status_code', 'Unknown'))
-                print(f"  Page title: {title}")
-                print(f"  Status code: {status_code}")
             
+            print(f"  ✅ Scraped {len(markdown_content)} chars from '{title[:50]}...'")
             return markdown_content
         else:
             raise Exception("SDK returned no markdown content")
@@ -300,8 +291,6 @@ def parse_events_from_markdown(markdown_content):
     Returns:
         list: List of event dictionaries
     """
-    print(f"Parsing events from content ({len(markdown_content)} characters)...")
-    
     events = []
     weekend_dates = api_helpers.get_weekend_dates()
     
@@ -385,7 +374,6 @@ def parse_events_from_markdown(markdown_content):
         if not event.get("end_time"):
             event["end_time"] = None
     
-    print(f"Parsed {len(events)} events from markdown")
     return events
 
 
@@ -450,15 +438,14 @@ def save_events_to_db(events):
     """
     from anvil.tables import app_tables
     
-    print(f"Saving {len(events)} events to database...")
-    
     saved_count = 0
+    skipped_count = 0
     
     try:
         for event in events:
             # Skip events without required fields
             if not event.get("title") or not event.get("date"):
-                print(f"Skipping event without title or date: {event.get('title', 'Unknown')}")
+                skipped_count += 1
                 continue
             
             # Determine initial cost level (will be refined by AI)
@@ -488,7 +475,11 @@ def save_events_to_db(events):
             
             saved_count += 1
         
-        print(f"Successfully saved {saved_count} events to database")
+        # Summary message
+        if skipped_count > 0:
+            print(f"  ✓ Saved {saved_count} events ({skipped_count} skipped - missing title/date)")
+        else:
+            print(f"  ✓ Saved {saved_count} events")
         return saved_count
         
     except Exception as e:

@@ -85,7 +85,7 @@ def extract_weekend_forecasts(weather_data):
     daily_forecasts = weather_data.get("daily", [])
     hourly_forecasts = weather_data.get("hourly", [])  # 48 hours available
     
-    print(f"  Processing {len(daily_forecasts)} daily forecasts and {len(hourly_forecasts)} hourly forecasts")
+    # Processing forecasts (logging reduced for brevity)
     
     for day_name, target_date in weekend_dates.items():
         # Find matching daily forecast
