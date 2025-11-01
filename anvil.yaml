@@ -164,6 +164,9 @@ runtime_options:
   version: 2
 scheduled_tasks: []
 secrets:
+  ADMIN_PASSWORD:
+    type: secret
+    value: {PLE3BZEKOON63IQ4: ai3P+tTBW5UpaBKl+FcG3IVx6Nhvb7fQ81RweE9qkON1y88vviDSea59jZ73uqljF7CIrkP9fjSr4JvCWm0bFEqi3iF27iJrrdNyEZupSrcyU38DxqiotxU1Gp9X4y2uRhMIf4EAlQ==}
   FIRECRAWL_API_KEY:
     type: secret
     value: {PLE3BZEKOON63IQ4: 6xz0NQaQ+vWo8BqRqJmT4pVOQI1JI7B2ztF6rf2440SkqHqNFTNDxETvGSriwD4kRogDF4hjA2tbzUaDa3hL9oaJQipAtshSvwg+wyJ8coXZs4F52aT1Kg3TvwKw/hrH9WxKlVpSvx867mg7MWXzE0QkSOLpzED+o5Klx22/7zCaXw==}
