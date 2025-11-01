@@ -265,13 +265,58 @@ def get_weather_for_datetime(event_date, event_time=None):
     return weather_info
 
 
+def get_best_weather_values(weather_data):
+    """
+    Extract the best available weather values from weather_data.
+    Prioritizes hourly data when available, falls back to daily forecast.
+    
+    Args:
+        weather_data: Weather forecast dictionary (may include hourly data)
+        
+    Returns:
+        dict: Normalized weather values with keys:
+            - temp: Temperature in °F
+            - feels_like: Feels-like temperature in °F
+            - precipitation_chance: Percentage (0-100)
+            - wind_speed: Wind speed in mph
+            - conditions: Description string
+            - is_hourly: Boolean indicating if hourly data was used
+    """
+    hourly_data = weather_data.get("hourly")
+    
+    if hourly_data:
+        # Use precise event-time weather
+        return {
+            "temp": hourly_data.get("temp", 70),
+            "feels_like": hourly_data.get("feels_like", hourly_data.get("temp", 70)),
+            "precipitation_chance": hourly_data.get("precipitation_chance", 0),
+            "wind_speed": hourly_data.get("wind_speed", 0),
+            "conditions": hourly_data.get("conditions", "unknown"),
+            "humidity": hourly_data.get("humidity", 0),
+            "is_hourly": True
+        }
+    else:
+        # Fallback to daily forecast
+        temp_high = weather_data.get("temp_high", 70)
+        return {
+            "temp": temp_high,
+            "feels_like": temp_high,  # No feels_like in daily forecast
+            "precipitation_chance": weather_data.get("precipitation_chance", 0),
+            "wind_speed": weather_data.get("wind_speed", 0),
+            "conditions": weather_data.get("conditions", "unknown"),
+            "humidity": 0,  # Not available in daily forecast
+            "is_hourly": False
+        }
+
+
 def calculate_weather_score(event_data, weather_data):
     """
     Calculate weather suitability score for an event (0-100).
+    Uses event-specific hourly forecast when available for maximum accuracy.
     
     Args:
         event_data: Event dictionary with is_outdoor, date, time info
-        weather_data: Weather forecast dictionary
+        weather_data: Weather forecast dictionary (may include hourly data)
         
     Returns:
         int: Weather score (0-100)
@@ -286,8 +331,14 @@ def calculate_weather_score(event_data, weather_data):
     # For outdoor events, calculate based on conditions
     score = 100
     
+    # Get best available weather values (hourly if available, daily otherwise)
+    weather_values = get_best_weather_values(weather_data)
+    
+    precip_chance = weather_values["precipitation_chance"]
+    effective_temp = weather_values["feels_like"]  # Use feels_like for comfort
+    wind_speed = weather_values["wind_speed"]
+    
     # Check precipitation
-    precip_chance = weather_data.get("precipitation_chance", 0)
     if precip_chance > config.PRECIP_THRESHOLDS["high"]:
         score -= 40  # Major penalty for high rain chance
     elif precip_chance > config.PRECIP_THRESHOLDS["medium"]:
@@ -295,19 +346,17 @@ def calculate_weather_score(event_data, weather_data):
     elif precip_chance > config.PRECIP_THRESHOLDS["low"]:
         score -= 10  # Small penalty
     
-    # Check temperature
-    temp = weather_data.get("temp_high", 70)
-    if temp < config.TEMP_THRESHOLDS["too_cold"]:
+    # Check temperature (using feels-like)
+    if effective_temp < config.TEMP_THRESHOLDS["too_cold"]:
         score -= 30  # Too cold
-    elif temp < config.TEMP_THRESHOLDS["cold"]:
+    elif effective_temp < config.TEMP_THRESHOLDS["cold"]:
         score -= 15  # Cold
-    elif temp > config.TEMP_THRESHOLDS["too_hot"]:
+    elif effective_temp > config.TEMP_THRESHOLDS["too_hot"]:
         score -= 30  # Too hot
-    elif temp > config.TEMP_THRESHOLDS["hot"]:
+    elif effective_temp > config.TEMP_THRESHOLDS["hot"]:
         score -= 15  # Hot
     
     # Check wind
-    wind_speed = weather_data.get("wind_speed", 0)
     if wind_speed > config.WIND_THRESHOLDS["windy"]:
         score -= 15  # Windy conditions
     elif wind_speed > config.WIND_THRESHOLDS["breezy"]:

@@ -178,6 +178,7 @@ def update_all_recommendation_scores():
 def get_weather_warning(event):
     """
     Generate weather warning message for outdoor events.
+    Uses event-time specific hourly forecast when available.
     
     Args:
         event: Event row from database
@@ -190,7 +191,7 @@ def get_weather_warning(event):
     
     weather_score = event["weather_score"] if event["weather_score"] is not None else 100
     
-    # Get weather details
+    # Get weather details (with hourly data if available)
     weather_data = weather_service.get_weather_for_datetime(
         event["date"],
         event["start_time"]
@@ -201,24 +202,36 @@ def get_weather_warning(event):
     
     warnings = []
     
-    # Check precipitation
-    precip = weather_data.get("precipitation_chance", 0)
-    if precip > 70:
-        warnings.append(f"High chance of rain ({precip}%)")
-    elif precip > 40:
-        warnings.append(f"Possible rain ({precip}%)")
+    # Get best available weather values (uses helper function)
+    weather_values = weather_service.get_best_weather_values(weather_data)
     
-    # Check temperature
-    temp = weather_data.get("temp_high", 70)
-    if temp < 40:
-        warnings.append(f"Very cold ({temp}°F)")
-    elif temp > 95:
-        warnings.append(f"Very hot ({temp}°F)")
+    precip = weather_values["precipitation_chance"]
+    temp = weather_values["temp"]
+    feels_like = weather_values["feels_like"]
+    wind = weather_values["wind_speed"]
+    is_hourly = weather_values["is_hourly"]
+    
+    # Check precipitation
+    if precip > 70:
+        warnings.append(f"High chance of rain ({int(precip)}%)")
+    elif precip > 40:
+        warnings.append(f"Possible rain ({int(precip)}%)")
+    
+    # Check temperature (using feels-like)
+    if feels_like < 40:
+        if is_hourly and feels_like != temp:
+            warnings.append(f"Very cold (feels like {int(feels_like)}°F)")
+        else:
+            warnings.append(f"Very cold ({int(feels_like)}°F)")
+    elif feels_like > 95:
+        if is_hourly and feels_like != temp:
+            warnings.append(f"Very hot (feels like {int(feels_like)}°F)")
+        else:
+            warnings.append(f"Very hot ({int(feels_like)}°F)")
     
     # Check wind
-    wind = weather_data.get("wind_speed", 0)
     if wind > 20:
-        warnings.append(f"Windy conditions ({wind} mph)")
+        warnings.append(f"Windy conditions ({int(wind)} mph)")
     
     if warnings:
         return " • ".join(warnings)

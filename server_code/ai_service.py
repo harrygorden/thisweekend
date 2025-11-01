@@ -311,14 +311,17 @@ def generate_weather_aware_suggestions(weather_data, events):
 def build_suggestions_prompt(weather_data, events):
     """
     Build the ChatGPT prompt for weather-aware suggestions.
+    Uses event-specific hourly forecasts for precise recommendations.
     
     Args:
         weather_data: List of weather forecast dictionaries
-        events: List of event dictionaries
+        events: List of event dictionaries (with weather_score)
         
     Returns:
         str: Formatted prompt
     """
+    from . import weather_service
+    
     # Summarize weather
     weather_summary = []
     for day in weather_data[:3]:  # Fri, Sat, Sun
@@ -327,46 +330,61 @@ def build_suggestions_prompt(weather_data, events):
             f"{day['conditions']}, {day['precipitation_chance']}% rain"
         )
     
-    # Separate events by weather suitability
-    # Good for nice weather (outdoor, low rain days)
-    outdoor_suitable = []
-    # Good for rainy weather (indoor, any day)
-    indoor_suitable = []
-    
-    for event in events[:20]:  # Top 20 by recommendation score
-        if event.get('is_outdoor'):
-            outdoor_suitable.append(event)
-        if event.get('is_indoor'):
-            indoor_suitable.append(event)
-    
-    # Build event details for AI
+    # Build detailed event info with event-specific weather
     event_details = []
-    for event in events[:15]:  # Top 15 events
-        venue_type = "outdoor" if event.get('is_outdoor') else "indoor"
+    for event in events[:15]:  # Top 15 events by recommendation score
+        venue_type = []
+        if event.get('is_outdoor'):
+            venue_type.append("outdoor")
+        if event.get('is_indoor'):
+            venue_type.append("indoor")
+        venue_str = "/".join(venue_type) if venue_type else "indoor"
+        
         cost = event.get('cost_level', '$$')
+        time = event.get('start_time', 'TBD')
+        location = event.get('location', 'TBD')
+        
+        # Get event-specific weather conditions
+        weather_context = ""
+        if event.get('date') and event.get('start_time'):
+            event_weather = weather_service.get_weather_for_datetime(
+                event['date'],
+                event['start_time']
+            )
+            
+            if event_weather and event_weather.get('hourly'):
+                # Use precise hourly forecast
+                h = event_weather['hourly']
+                weather_context = f" [Weather at {time}: {h['temp']}°F, {h['conditions']}, {h['precipitation_chance']}% rain]"
+            elif event_weather:
+                # Use daily forecast as fallback
+                weather_context = f" [Weather: {event_weather.get('temp_high', '?')}°F high, {event_weather.get('precipitation_chance', '?')}% rain]"
+        
         event_details.append(
-            f"- {event['title']} ({venue_type}, {event['day_name']}, {cost}, {event.get('location', 'TBD')})"
+            f"- {event['title']} ({venue_str}, {event['day_name']} at {time}, {cost}){weather_context}"
         )
     
     prompt = f"""Based on this weekend's weather forecast, recommend 3-4 SPECIFIC events from the list below that would be most enjoyable given the conditions.
 
-Weather Forecast:
+Overall Weekend Weather:
 {chr(10).join(weather_summary)}
 
-Available Events (pre-sorted by recommendation score):
+Available Events (with event-specific weather conditions):
 {chr(10).join(event_details)}
 
 Instructions:
 - Recommend 3-4 SPECIFIC event names from the list above
-- If weather is nice (low rain, comfortable temps), prioritize outdoor events
-- If weather is rainy or extreme, prioritize indoor events
+- Use the event-specific weather conditions shown in brackets [...]
+- Match outdoor events with good weather at their specific time
+- Suggest indoor alternatives when weather is poor at event times
+- Consider "feels like" temperature and precipitation at the exact event time
 - Mix different types of activities if possible
 - Keep it to 3-4 sentences total
 - Be warm and conversational, like a local friend giving advice
-- Briefly explain WHY each event is good for the weather
+- Explain WHY each event is perfect for its specific time and conditions
 
 Example format:
-"With [weather description], I'd definitely check out [Event Name] on [Day] - perfect for [reason]. [Event Name] is another great option if you're looking for [activity type]. Don't miss [Event Name], especially with this [weather condition]!"
+"Looking at Saturday's forecast, [Event Name] at [time] is perfect - it'll be [temp] and [conditions] right when it starts. If you want something earlier, [Event Name] at [time] is great with [weather]. For Sunday, don't miss [Event Name] - the weather at [time] will be ideal for [outdoor/indoor activity]."
 
 Now write specific event recommendations for THIS weekend:"""
     
