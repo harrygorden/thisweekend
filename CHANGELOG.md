@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed - 2025-11-01
 
+#### Improved Event Discovery - Remove /events/ Directory Restriction
+
+**Summary:** Removed the restriction that only accepted events linking to the site's `/events/` directory, significantly increasing the number of events available to users.
+
+**Changes:**
+- Modified `scraper_service.py` to accept all event links from the primary site, not just those in `/events/` directory
+- Enhanced error handling to gracefully fall back to primary site data when event detail pages can't be scraped
+- Added detection for login-required pages, access-denied pages, and insufficient content
+- Expanded skip patterns to filter out navigation links, social media, and other non-event URLs
+- Updated documentation to reflect the new behavior
+
+**Impact:**
+- Users will now see significantly more events in the app
+- Events with inaccessible detail pages will still appear with basic information from the primary site
+- Better resilience against scraping failures
+
+---
+
 #### Major Codebase Optimization & Documentation Consolidation
 
 **Summary:** Complete refactoring of codebase for performance, organization, and best practices. Consolidated documentation from 19 files down to 3 essential guides.

@@ -74,13 +74,20 @@ def parse_events_from_markdown(markdown_content):
     # Pattern to match markdown links: [text](url)
     link_pattern = r'\[([^\]]+)\]\(([^\)]+)\)'
     
-    # ONLY accept links to /events/ - these are real event pages
-    event_url_pattern = r'ilovememphisblog\.com/events/[^/]+/[^/]+'
-    
-    # Additional skip patterns for event URLs we don't want
-    skip_event_patterns = [
+    # Skip patterns for URLs we don't want to process
+    skip_url_patterns = [
         r'/events/add',  # Submit event page
         r'/events/category/all-events',  # Calendar page
+        r'#',  # Anchor links
+        r'javascript:',  # JavaScript links
+        r'mailto:',  # Email links
+        r'/category/',  # Category pages
+        r'/tag/',  # Tag pages
+        r'/author/',  # Author pages
+        r'/page/',  # Pagination
+        r'facebook\.com',  # Social media
+        r'twitter\.com',
+        r'instagram\.com',
     ]
     
     lines = markdown_content.split('\n')
@@ -138,17 +145,11 @@ def parse_events_from_markdown(markdown_content):
             link_text = match.group(1).strip()
             link_url = match.group(2).strip()
             
-            # Check if this is a real event URL
-            if not re.search(event_url_pattern, link_url):
-                links_skipped += 1
-                skip_reasons["not_event_url"] = skip_reasons.get("not_event_url", 0) + 1
-                continue
-            
-            # Check skip patterns
+            # Check skip patterns for URLs we don't want
             skip_reason = None
-            for pattern in skip_event_patterns:
+            for pattern in skip_url_patterns:
                 if re.search(pattern, link_url, re.IGNORECASE):
-                    skip_reason = f"skip_event:{pattern}"
+                    skip_reason = f"skip_url:{pattern}"
                     break
             
             if skip_reason:
@@ -157,6 +158,7 @@ def parse_events_from_markdown(markdown_content):
                 continue
             
             # Parse event details from link text and scrape the event page
+            # If scraping fails, we'll use only the info from the primary site
             event = parse_event_link_text(link_text, link_url, current_day, weekend_dates)
             
             if event:
@@ -189,14 +191,17 @@ def parse_events_from_markdown(markdown_content):
 def scrape_event_details_from_url(event_url, api_key):
     """
     Scrape individual event page for detailed information.
-    Detects if event has passed via redirect.
+    Detects if event has passed via redirect or if page requires login/is inaccessible.
+    
+    If scraping fails (login required, 404, etc.), returns None so the caller
+    can fall back to using only the information from the primary site.
     
     Args:
         event_url: URL to the specific event page
         api_key: Firecrawl API key
         
     Returns:
-        dict: Detailed event information or None if scraping fails or event has passed
+        dict: Detailed event information, {'event_has_passed': True}, or None if scraping fails
     """
     try:
         firecrawl = Firecrawl(api_key=api_key)
@@ -212,16 +217,35 @@ def scrape_event_details_from_url(event_url, api_key):
             if 'event-has-passed' in final_url:
                 print(f"  ⏭️  Event has passed (redirected): {event_url}")
                 return {'event_has_passed': True}
+            
+            # Check for login/access issues
+            if 'login' in final_url.lower() or 'sign-in' in final_url.lower():
+                print(f"  🔒 Login required, using primary site data: {event_url}")
+                return None
         
         if hasattr(result, 'markdown'):
-            # Also check markdown content for "event has passed" message
-            if 'event has passed' in result.markdown.lower():
+            markdown_lower = result.markdown.lower()
+            
+            # Check for "event has passed" message
+            if 'event has passed' in markdown_lower:
                 print(f"  ⏭️  Event has passed (content check): {event_url}")
                 return {'event_has_passed': True}
             
+            # Check for login/access required indicators
+            if any(indicator in markdown_lower for indicator in ['login required', 'sign in to view', 'access denied', '403 forbidden', '404 not found']):
+                print(f"  🔒 Page inaccessible, using primary site data: {event_url}")
+                return None
+            
+            # Check if we got meaningful content (not just an error page)
+            if len(result.markdown.strip()) < 50:
+                print(f"  ⚠️  Insufficient content, using primary site data: {event_url}")
+                return None
+            
             return extract_details_from_event_page(result.markdown)
-    except Exception:
+    except Exception as e:
         # Silently fail - we'll use the data from the weekend page
+        # Only log for debugging if needed
+        # print(f"  ⚠️  Error scraping {event_url}: {str(e)[:50]}")
         pass
     
     return None
