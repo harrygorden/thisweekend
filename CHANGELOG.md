@@ -9,6 +9,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added - 2025-11-01
 
+#### Sort Order Dropdown
+
+**Summary:** Added sort order dropdown allowing users to toggle between chronological (soonest first) and recommendation-based sorting.
+
+**Changes:**
+
+1. **MainApp (`MainApp`)**
+   - Added `current_sort` state variable (defaults to 'time')
+   - Added `sort_dropdown_change()` event handler
+   - Updated `load_events()` to use current sort order
+   - Updated `update_event_count()` to show sort method in display
+
+2. **Sort Options:**
+   - **Soonest First (time):** Events sorted chronologically - earliest events first
+   - **Recommended (recommendation):** Events sorted by weather-aware recommendation score
+   - Optional: **Lowest Cost (cost):** Events sorted by cost level
+
+**UI Requirements:**
+- Add DropDown component named `sort_dropdown` in Anvil Designer
+- Items: `[('Soonest First', 'time'), ('Recommended', 'recommendation')]`
+- Default: `'time'` (chronological)
+- Event handler already implemented
+
+**User Benefit:**
+- ✅ Users can choose their preferred view
+- ✅ Default chronological helps plan day-by-day
+- ✅ Recommendation view surfaces best events
+- ✅ Flexible sorting based on user needs
+
+**Example:**
+```
+Event count: "Showing 10 events by time"
+After dropdown change: "Showing 10 events by recommendation"
+```
+
+**Files Modified:**
+- `client_code/MainApp/__init__.py` - Sort functionality
+
+**Files Added:**
+- `SORT_DROPDOWN_INSTRUCTIONS.md` - UI designer instructions
+
+---
+
+### Added - 2025-11-01
+
 #### Event-Specific Weather on Event Cards
 
 **Summary:** Added event-time specific weather forecasts directly to each event card for better user decision-making.

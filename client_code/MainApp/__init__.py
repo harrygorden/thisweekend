@@ -42,6 +42,9 @@ class MainApp(MainAppTemplate):
             'outdoor': True
         }
         
+        # Default sort order
+        self.current_sort = 'time'  # Default to chronological (soonest first)
+        
         # Load initial data
         self.load_initial_data()
     
@@ -114,8 +117,8 @@ class MainApp(MainAppTemplate):
     def load_events(self):
         """Load events from server"""
         try:
-            # Get all events, sorted by recommendation score
-            self.all_events = anvil.server.call('get_all_events', sort_by='recommendation')
+            # Get all events with current sort order
+            self.all_events = anvil.server.call('get_all_events', sort_by=self.current_sort)
             
             # Apply current filters
             self.apply_filters()
@@ -225,10 +228,18 @@ class MainApp(MainAppTemplate):
         total = len(self.all_events)
         shown = len(self.filtered_events)
         
+        # Include sort info
+        sort_labels = {
+            'time': 'by time',
+            'recommendation': 'by recommendation',
+            'cost': 'by cost'
+        }
+        sort_text = sort_labels.get(self.current_sort, '')
+        
         if shown == total:
-            self.event_count_label.text = f"Showing all {total} events"
+            self.event_count_label.text = f"Showing all {total} events {sort_text}"
         else:
-            self.event_count_label.text = f"Showing {shown} of {total} events"
+            self.event_count_label.text = f"Showing {shown} of {total} events {sort_text}"
     
     
     # Search functionality
@@ -501,6 +512,17 @@ class MainApp(MainAppTemplate):
             "For manual refresh, please contact the administrator.",
             title="Auto-Refresh Enabled"
         )
+    
+    
+    def sort_dropdown_change(self, **event_args):
+        """Handle sort order change"""
+        if hasattr(self, 'sort_dropdown'):
+            selected = self.sort_dropdown.selected_value
+            
+            if selected and selected != self.current_sort:
+                self.current_sort = selected
+                # Reload events with new sort order
+                self.load_events()
     
     
     def admin_link_click(self, **event_args):
