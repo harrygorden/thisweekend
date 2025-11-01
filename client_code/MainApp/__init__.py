@@ -56,6 +56,9 @@ class MainApp(MainAppTemplate):
             # Load weather
             self.load_weather_forecast()
             
+            # Load weekend suggestions
+            self.load_weekend_suggestions()
+            
             # Load events
             self.load_events()
             
@@ -109,6 +112,30 @@ class MainApp(MainAppTemplate):
         except Exception as e:
             print(f"Error loading weather: {e}")
             self.weather_summary_label.text = "Weather forecast unavailable"
+    
+    
+    def load_weekend_suggestions(self):
+        """Load AI-generated weekend suggestions"""
+        try:
+            # Set loading state
+            self.suggestions_text.text = "Generating personalized suggestions..."
+            self.suggestions_text.italic = True
+            
+            # Get suggestions from server
+            suggestions = anvil.server.call('get_weekend_suggestions')
+            
+            if suggestions:
+                self.suggestions_text.text = suggestions
+                self.suggestions_text.italic = False
+            else:
+                # Hide the section if no suggestions
+                self.suggestions_section.visible = False
+                
+        except Exception as e:
+            print(f"Error loading suggestions: {e}")
+            # Show a friendly fallback message
+            self.suggestions_text.text = "Explore the events below to find your perfect weekend activities!"
+            self.suggestions_text.italic = False
     
     
     def load_events(self):

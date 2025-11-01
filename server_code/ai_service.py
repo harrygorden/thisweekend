@@ -254,3 +254,139 @@ def update_events_with_analysis(analyses):
     except Exception as e:
         print(f"Error updating events with analysis: {str(e)}")
         raise
+
+
+def generate_weather_aware_suggestions(weather_data, events):
+    """
+    Generate AI-powered suggestions based on weather forecast and available events.
+    
+    Args:
+        weather_data: List of weather forecast dictionaries for the weekend
+        events: List of event dictionaries
+        
+    Returns:
+        str: AI-generated suggestions text
+    """
+    # Get API key
+    api_key = api_helpers.get_api_key("OPENAI_API_KEY")
+    
+    # Build the prompt
+    prompt = build_suggestions_prompt(weather_data, events)
+    
+    # Initialize OpenAI client
+    client = OpenAI(api_key=api_key)
+    
+    # Make API call
+    response = client.chat.completions.create(
+        model=config.OPENAI_MODEL,
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a friendly local events guide for Memphis, TN. Provide warm, conversational suggestions for weekend activities based on the weather forecast."
+            },
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ],
+        temperature=0.7,  # More creative for suggestions
+        max_tokens=300  # Keep suggestions concise
+    )
+    
+    # Extract response
+    suggestions = response.choices[0].message.content.strip()
+    
+    return suggestions
+
+
+def build_suggestions_prompt(weather_data, events):
+    """
+    Build the ChatGPT prompt for weather-aware suggestions.
+    
+    Args:
+        weather_data: List of weather forecast dictionaries
+        events: List of event dictionaries
+        
+    Returns:
+        str: Formatted prompt
+    """
+    # Summarize weather
+    weather_summary = []
+    for day in weather_data[:3]:  # Fri, Sat, Sun
+        weather_summary.append(
+            f"{day['day_name']}: {day['temp_high']}°F/{day['temp_low']}°F, "
+            f"{day['conditions']}, {day['precipitation_chance']}% rain"
+        )
+    
+    # Count outdoor vs indoor events
+    outdoor_events = [e for e in events if e.get('is_outdoor')]
+    indoor_events = [e for e in events if e.get('is_indoor')]
+    
+    # Sample a few interesting events for context
+    sample_events = []
+    for event in events[:10]:  # Top 10 by recommendation
+        venue_type = "outdoor" if event.get('is_outdoor') else "indoor"
+        sample_events.append(
+            f"- {event['title']} ({venue_type}, {event['day_name']})"
+        )
+    
+    prompt = f"""Based on this weekend's weather forecast and available events in Memphis, TN, write 2-3 short, friendly sentences suggesting what types of activities would be most enjoyable.
+
+Weather Forecast:
+{chr(10).join(weather_summary)}
+
+Available Events:
+- {len(outdoor_events)} outdoor events
+- {len(indoor_events)} indoor events
+
+Some examples:
+{chr(10).join(sample_events[:8])}
+
+Instructions:
+- If weather is nice (low rain chance, comfortable temps), encourage outdoor activities
+- If weather is rainy or very hot/cold, suggest indoor alternatives
+- Be warm and conversational, like talking to a friend
+- Keep it to 2-3 sentences total
+- Don't mention specific event names, just general activity types
+- Focus on what makes the weekend special weather-wise
+
+Example good response:
+"This weekend's looking gorgeous! Perfect weather for checking out outdoor festivals, farmers markets, or catching a concert under the stars. If you need a break from the heat, there are plenty of air-conditioned museums and theaters too."
+
+Now write suggestions for THIS weekend:"""
+    
+    return prompt
+
+
+@anvil.server.callable
+def get_weekend_suggestions():
+    """
+    Get AI-generated weather-aware weekend suggestions.
+    Callable from client-side code.
+    
+    Returns:
+        str: Suggestion text, or None if generation fails
+    """
+    try:
+        # Get weather data
+        from . import weather_service
+        weather_data = weather_service.get_weather_data()
+        
+        if not weather_data:
+            return None
+        
+        # Get events
+        from . import data_processor
+        events = data_processor.get_all_events(sort_by='recommendation')
+        
+        if not events:
+            return None
+        
+        # Generate suggestions
+        suggestions = generate_weather_aware_suggestions(weather_data, events)
+        
+        return suggestions
+        
+    except Exception as e:
+        print(f"Error generating weekend suggestions: {str(e)}")
+        return None
