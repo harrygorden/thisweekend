@@ -102,15 +102,31 @@ def parse_events_from_markdown(markdown_content):
             continue
         
         # Track day headers - try multiple patterns
+        # Pattern 1: Markdown headers like "# FRIDAY" or "## SATURDAY"
         day_match = re.search(r'#{1,3}\s*(FRIDAY|SATURDAY|SUNDAY)', line, re.IGNORECASE)
         if not day_match:
+            # Pattern 2: Standalone day names like "FRIDAY"
             day_match = re.search(r'^(FRIDAY|SATURDAY|SUNDAY)\s*$', line, re.IGNORECASE)
         if not day_match:
+            # Pattern 3: Day at start of line like "FRIDAY EVENTS"
             day_match = re.search(r'^(FRIDAY|SATURDAY|SUNDAY)\b', line, re.IGNORECASE)
+        if not day_match:
+            # Pattern 4: Common patterns like "THINGS TO DO ON SUNDAY" or "FRIDAY NIGHT"
+            day_match = re.search(r'\b(FRIDAY|SATURDAY|SUNDAY)\b', line, re.IGNORECASE)
         
         if day_match:
-            current_day = day_match.group(1).lower()
-            print(f"  📅 Found day header: {day_match.group(1)}")
+            detected_day = day_match.group(1).lower()
+            # Only update current_day if this looks like a header (not just a mention in text)
+            # Headers are typically: short lines, ALL CAPS, or contain keywords like "THINGS TO DO"
+            is_header = (
+                len(line) < 100 and  # Not too long
+                (line.isupper() or  # All caps
+                 re.search(r'(THINGS TO DO|EVENTS ON|HAPPENING)', line, re.IGNORECASE) or  # Header keywords
+                 line.startswith('#'))  # Markdown header
+            )
+            if is_header:
+                current_day = detected_day
+                print(f"  📅 Found day header: '{line[:60]}...' → {current_day}")
             continue
         
         # Find all markdown links in this line
@@ -204,17 +220,15 @@ def extract_details_from_event_page(markdown):
         markdown: Markdown content from event page
         
     Returns:
-        dict: Extracted details (location, time, cost, description, etc.)
+        dict: Extracted details (location, time, cost, description, date)
     """
     details = {
         'location': None,
         'start_time': None,
         'end_time': None,
         'cost_raw': None,
-        'description': None
-        # NOTE: We do NOT extract 'date' from event pages
-        # Event pages show recurring events with multiple future dates
-        # We trust the Friday/Saturday/Sunday assignment from /weekend page instead
+        'description': None,
+        'date': None  # Extract date from event page to verify accuracy
     }
     
     lines = markdown.split('\n')
@@ -277,10 +291,26 @@ def extract_details_from_event_page(markdown):
             details['cost_raw'] = cost_text
             continue
         
-        # NOTE: We intentionally do NOT extract dates from event pages
-        # Event pages often show ALL occurrences (Nov 1, Nov 7, Nov 14, etc.)
-        # The /weekend page day header (Friday/Saturday/Sunday) is more reliable
-        # for determining THIS weekend's specific occurrence
+        # Look for date patterns - extract the FIRST date found (usually the correct one)
+        if not details['date']:
+            # Pattern for dates like "Nov 2, 2025" or "November 2, 2025"
+            date_match = re.search(r'\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{1,2}),?\s+(\d{4})\b', line, re.IGNORECASE)
+            if date_match:
+                date_str = date_match.group(0)
+                parsed_date = api_helpers.parse_date_string(date_str)
+                if parsed_date:
+                    details['date'] = parsed_date
+                    continue
+            
+            # Pattern for dates like "Friday, November 2, 2025"
+            date_match = re.search(r'\b(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),?\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{1,2}),?\s+(\d{4})\b', line, re.IGNORECASE)
+            if date_match:
+                # Extract just the date part (skip the day name)
+                date_str = date_match.group(2) + ' ' + date_match.group(3) + ', ' + date_match.group(4)
+                parsed_date = api_helpers.parse_date_string(date_str)
+                if parsed_date:
+                    details['date'] = parsed_date
+                    continue
         
         # Start collecting description after heading
         if line.startswith('# ') and not in_description_section:
@@ -388,15 +418,25 @@ def parse_event_link_text(link_text, link_url, current_day, weekend_dates):
             if detailed_info.get('description') and len(detailed_info['description']) > 20:
                 event["description"] = detailed_info['description']
             
-            # IMPORTANT: Do NOT override date from event pages!
-            # Event pages often show ALL occurrences of recurring events (Nov 7, Nov 14, etc.)
-            # The /weekend page listing under Friday/Saturday/Sunday is more reliable
-            # for determining which specific occurrence is THIS weekend.
-            # 
-            # We trust: The day assignment from the /weekend page (Fri/Sat/Sun header)
-            # We ignore: Dates from individual event pages (often wrong/future dates)
-            #
-            # If you need to debug date issues, check the weekend_dates assignment above
+            # Handle date extraction with smart logic:
+            # 1. If event page has a specific date, use it IF it matches the weekend
+            # 2. This handles cases where header detection fails or is ambiguous
+            # 3. But still filters out recurring events with future dates beyond this weekend
+            if detailed_info.get('date'):
+                extracted_date = detailed_info['date']
+                # Check if extracted date is within this weekend (Fri-Sun)
+                if extracted_date in [weekend_dates['friday'], weekend_dates['saturday'], weekend_dates['sunday']]:
+                    # Date from event page matches this weekend - use it!
+                    event["date"] = extracted_date
+                    # Verify it matches the assigned_day, if not update for accuracy
+                    expected_date = weekend_dates.get(assigned_day)
+                    if expected_date != extracted_date:
+                        # Header said Friday but event page says Sunday - trust the event page
+                        for day_name, day_date in weekend_dates.items():
+                            if day_date == extracted_date:
+                                print(f"  ⚠️ Date mismatch: header={assigned_day} ({expected_date}), event page={day_name} ({extracted_date}). Using event page date.")
+                                break
+                # else: date is not this weekend (recurring event), keep header-based date
     except Exception:
         # If scraping individual page fails, use link text data
         pass

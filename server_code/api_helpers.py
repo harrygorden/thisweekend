@@ -80,10 +80,12 @@ def parse_date_string(date_str):
         "%Y-%m-%d",
         "%m/%d/%Y",
         "%m-%d-%Y",
-        "%B %d, %Y",
-        "%b %d, %Y",
-        "%A, %B %d, %Y",
-        "%a, %b %d, %Y",
+        "%B %d, %Y",      # November 2, 2025
+        "%b %d, %Y",      # Nov 2, 2025
+        "%B %d %Y",       # November 2 2025 (without comma)
+        "%b %d %Y",       # Nov 2 2025 (without comma)
+        "%A, %B %d, %Y",  # Friday, November 2, 2025
+        "%a, %b %d, %Y",  # Fri, Nov 2, 2025
     ]
     
     for fmt in formats:
