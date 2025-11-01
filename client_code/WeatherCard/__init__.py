@@ -75,11 +75,12 @@ class WeatherCard(WeatherCardTemplate):
     
     
     def display_time_periods(self, weather):
-        """Display morning/afternoon/evening forecast breakdowns"""
+        """Display morning/afternoon/evening forecast breakdowns (future periods only)"""
         # Check if we have time period data
         morning = weather.get('morning')
         afternoon = weather.get('afternoon')
         evening = weather.get('evening')
+        is_today = weather.get('is_today', False)
         
         # Build time period text
         period_lines = []
@@ -115,6 +116,12 @@ class WeatherCard(WeatherCardTemplate):
                 self.temp_range_label.text = "\n".join(period_lines)
                 self.temp_range_label.font_size = 11
                 self.temp_range_label.align = "left"
+        elif is_today and not period_lines:
+            # Today but no future periods - day has passed
+            if hasattr(self, 'temp_range_label'):
+                self.temp_range_label.text = "📅 Rest of day looks clear"
+                self.temp_range_label.font_size = 11
+                self.temp_range_label.italic = True
     
     
     def get_weather_icon(self, conditions):

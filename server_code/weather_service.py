@@ -496,35 +496,87 @@ def get_time_period_forecast(hourly_data, start_hour, end_hour):
 def get_weather_data():
     """
     Get all weather forecasts from the database.
+    Only returns FUTURE time periods - filters out past periods.
     Callable from client-side code.
     
     Returns:
-        list: List of weather forecast dictionaries
+        list: List of weather forecast dictionaries with future-only data
     """
+    import pytz
+    
     forecasts = []
+    
+    # Get current time in Central timezone
+    central_tz = pytz.timezone(config.MEMPHIS_TIMEZONE)
+    now_central = datetime.now(central_tz)
+    current_hour = now_central.hour
+    today = now_central.date()
     
     for row in app_tables.weather_forecast.search():
         hourly_data = row["hourly_data"]
+        forecast_date = row["forecast_date"]
         
         # Extract time period forecasts from hourly data
         morning = get_time_period_forecast(hourly_data, 6, 12)    # 6 AM - 12 PM
         afternoon = get_time_period_forecast(hourly_data, 12, 18)  # 12 PM - 6 PM
         evening = get_time_period_forecast(hourly_data, 18, 24)    # 6 PM - 12 AM
         
+        # Determine which periods are in the future
+        is_today = (forecast_date == today)
+        
+        if is_today:
+            # Filter out past periods for today
+            if current_hour >= 18:
+                # It's evening (6 PM+) - only show evening
+                morning = None
+                afternoon = None
+            elif current_hour >= 12:
+                # It's afternoon (12 PM+) - show afternoon and evening
+                morning = None
+            else:
+                # It's morning - show all periods
+                pass
+        
+        # Collect future time periods for calculating actual conditions
+        future_periods = []
+        if morning:
+            future_periods.append(morning)
+        if afternoon:
+            future_periods.append(afternoon)
+        if evening:
+            future_periods.append(evening)
+        
+        # Calculate future-only precipitation and conditions
+        if future_periods:
+            # Use max precipitation from FUTURE periods only
+            future_precip_chances = [p.get("precipitation_chance", 0) for p in future_periods]
+            actual_precip_chance = max(future_precip_chances)
+            
+            # Get most common future conditions
+            future_conditions = [p.get("conditions", "") for p in future_periods]
+            most_common_condition = max(set(future_conditions), key=future_conditions.count) if future_conditions else row["conditions"]
+        else:
+            # No future periods (day has passed)
+            actual_precip_chance = 0
+            most_common_condition = row["conditions"]
+        
         forecasts.append({
-            "date": row["forecast_date"],
+            "date": forecast_date,
             "day_name": row["day_name"],
             "temp_high": row["temp_high"],
             "temp_low": row["temp_low"],
-            "conditions": row["conditions"],
-            "precipitation_chance": row["precipitation_chance"],
+            "conditions": most_common_condition,  # Future conditions
+            "precipitation_chance": actual_precip_chance,  # Future precipitation only!
             "wind_speed": row["wind_speed"],
             "hourly_data": hourly_data,
             "fetched_at": row["fetched_at"],
-            # Time period breakdowns
+            # Time period breakdowns (filtered to future only)
             "morning": morning,
             "afternoon": afternoon,
-            "evening": evening
+            "evening": evening,
+            # Metadata
+            "is_today": is_today,
+            "has_future_periods": len(future_periods) > 0
         })
     
     return forecasts

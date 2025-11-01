@@ -9,6 +9,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed - 2025-11-01
 
+#### Future-Only Weather Display
+
+**Summary:** Updated weather display to show only FUTURE time periods and precipitation chances, not historical data.
+
+**Problem:**
+- Weather cards showed ALL time periods including past ones
+- Precipitation shown as "100% rain" even when remaining periods had 0% rain
+- Users saw "100% rain" when morning rain already passed and afternoon/evening were clear
+- Misleading for planning - users care about future weather, not what already happened
+
+**Example Issue:**
+```
+Saturday at 3 PM (afternoon):
+  Morning: 80% rain (already passed)
+  Afternoon: 0% rain (current/future)
+  Evening: 0% rain (future)
+  
+Display showed: "100% rain" ❌ Wrong!
+Should show: "0% rain" ✅ Based on remaining periods
+```
+
+**Fix:**
+- Updated `get_weather_data()` to detect current time in Central timezone
+- Filters out past time periods for today:
+  - If it's afternoon (12 PM+): Hide morning period
+  - If it's evening (6 PM+): Hide morning & afternoon periods
+- Recalculates precipitation chance from FUTURE periods only
+- Updates conditions based on what's still coming
+- UI shows "Rest of day looks clear" if all periods have passed
+
+**Impact:**
+- ✅ Users see only relevant future weather
+- ✅ Rain chances reflect what's still coming, not what passed
+- ✅ Outdoor event recommendations more accurate
+- ✅ No more misleading "100% rain" when it's actually clear ahead
+
+**Example After Fix:**
+```
+Saturday at 3 PM:
+  Afternoon: 0% rain (shown)
+  Evening: 0% rain (shown)
+  
+Display: "0% rain" ✅ Accurate!
+Events: Outdoor events recommended ✅
+```
+
+**Files Modified:**
+- `server_code/weather_service.py` - Future-only filtering logic
+- `client_code/WeatherCard/__init__.py` - Handle hidden past periods
+
+---
+
+### Fixed - 2025-11-01
+
 #### Critical Bug: Time Format Parsing
 
 **Summary:** Fixed critical bug where event times with periods ("1 p.m.", "10 a.m.") were not being matched correctly to hourly forecasts.
