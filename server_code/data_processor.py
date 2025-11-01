@@ -346,17 +346,36 @@ def get_all_events(sort_by="recommendation"):
 def serialize_events(events):
     """
     Convert event rows to dictionaries for client consumption.
+    Includes event-time specific weather forecast data.
     
     Args:
         events: List of event rows
         
     Returns:
-        list: List of event dictionaries
+        list: List of event dictionaries with weather info
     """
     serialized = []
     
     for event in events:
         try:
+            # Get event-time specific weather
+            event_weather = None
+            weather_temp = None
+            weather_precip = None
+            weather_conditions = None
+            
+            if event["date"] and event["start_time"]:
+                weather_data = weather_service.get_weather_for_datetime(
+                    event["date"],
+                    event["start_time"]
+                )
+                
+                if weather_data:
+                    weather_values = weather_service.get_best_weather_values(weather_data)
+                    weather_temp = int(weather_values["temp"])
+                    weather_precip = int(weather_values["precipitation_chance"])
+                    weather_conditions = weather_values["conditions"]
+            
             serialized.append({
                 "event_id": event["event_id"],
                 "title": event["title"] or "Untitled Event",
@@ -374,7 +393,11 @@ def serialize_events(events):
                 "categories": event["categories"] or [],
                 "weather_score": event["weather_score"] or 0,
                 "recommendation_score": event["recommendation_score"] or 0,
-                "weather_warning": get_weather_warning(event)
+                "weather_warning": get_weather_warning(event),
+                # Event-time specific weather forecast
+                "weather_temp": weather_temp,
+                "weather_precip": weather_precip,
+                "weather_conditions": weather_conditions
             })
         except Exception as e:
             print(f"Error serializing event {event.get_id()}: {e}")

@@ -49,25 +49,14 @@ class MainApp(MainAppTemplate):
     def load_initial_data(self):
         """Load weather and events from server"""
         try:
-            # Show loading
-            self.loading_label.visible = True
-            self.loading_label.text = "Loading weekend data..."
-            
             # Load weather
             self.load_weather_forecast()
-            
-            # Load weekend suggestions
-            self.load_weekend_suggestions()
             
             # Load events
             self.load_events()
             
-            # Hide loading
-            self.loading_label.visible = False
-            
         except Exception as e:
-            self.loading_label.text = f"Error loading data: {str(e)}"
-            self.loading_label.foreground = "red"
+            alert(f"Error loading data: {str(e)}", title="Error")
             print(f"Error in load_initial_data: {e}")
     
     
@@ -100,36 +89,10 @@ class MainApp(MainAppTemplate):
                         )
                         self.weather_container.add_component(fallback_label)
                 
-                # Update summary text with granular information
-                if len(weather_data) >= 3:
-                    # Find best and worst precipitation
-                    all_precips = []
-                    for day in weather_data[:3]:
-                        all_precips.append(day.get('precipitation_chance', 0))
-                        if day.get('morning'):
-                            all_precips.append(day['morning'].get('precipitation_chance', 0))
-                        if day.get('afternoon'):
-                            all_precips.append(day['afternoon'].get('precipitation_chance', 0))
-                        if day.get('evening'):
-                            all_precips.append(day['evening'].get('precipitation_chance', 0))
-                    
-                    max_precip = max(all_precips) if all_precips else 0
-                    
-                    # Build summary
-                    temp_range = f"{int(weather_data[0]['temp_low'])}-{int(weather_data[2]['temp_high'])}°F"
-                    
-                    if max_precip >= 60:
-                        weather_note = f"⚠️ Prepare for rain (up to {int(max_precip)}% chance)"
-                    elif max_precip >= 30:
-                        weather_note = f"🌦️ Some rain possible ({int(max_precip)}% chance)"
-                    else:
-                        weather_note = f"☀️ Mostly clear (only {int(max_precip)}% rain chance)"
-                    
-                    self.weather_summary_label.text = (
-                        f"Weekend Outlook: {temp_range} | {weather_note}"
-                    )
-            else:
-                self.weather_summary_label.text = "No weather data available"
+                # Weather summary is now shown in individual weather cards
+                # Remove the summary label to avoid redundancy
+                if hasattr(self, 'weather_summary_label'):
+                    self.weather_summary_label.visible = False
                 
         except Exception as e:
             print(f"Error loading weather: {e}")
@@ -137,27 +100,11 @@ class MainApp(MainAppTemplate):
     
     
     def load_weekend_suggestions(self):
-        """Load AI-generated weekend suggestions"""
-        try:
-            # Set loading state
-            self.suggestions_text.text = "Generating personalized suggestions..."
-            self.suggestions_text.italic = True
-            
-            # Get suggestions from server
-            suggestions = anvil.server.call('get_weekend_suggestions')
-            
-            if suggestions:
-                self.suggestions_text.text = suggestions
-                self.suggestions_text.italic = False
-            else:
-                # Hide the section if no suggestions
-                self.suggestions_section.visible = False
-                
-        except Exception as e:
-            print(f"Error loading suggestions: {e}")
-            # Show a friendly fallback message
-            self.suggestions_text.text = "Explore the events below to find your perfect weekend activities!"
-            self.suggestions_text.italic = False
+        """Load AI-generated weekend suggestions - DISABLED to prevent API costs"""
+        # Weekend suggestions removed to prevent users from triggering ChatGPT API calls
+        # Suggestions are now implicit based on recommendation scores
+        if hasattr(self, 'suggestions_section'):
+            self.suggestions_section.visible = False
     
     
     def load_events(self):
@@ -542,9 +489,14 @@ class MainApp(MainAppTemplate):
     
     
     def refresh_button_click(self, **event_args):
-        """Refresh data from server"""
-        self.load_initial_data()
-        alert("Data refreshed!", title="Success")
+        """Refresh data from server - DISABLED for regular users"""
+        # Refresh disabled to prevent users from triggering expensive API calls
+        # Data is refreshed automatically via scheduled background tasks
+        alert(
+            "Data is automatically refreshed weekly.\n\n"
+            "For manual refresh, please contact the administrator.",
+            title="Auto-Refresh Enabled"
+        )
     
     
     def admin_link_click(self, **event_args):

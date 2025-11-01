@@ -86,7 +86,41 @@ class EventCard(EventCardTemplate):
         else:
             self.categories_label.text = ""
         
-        # Weather warning (for outdoor events)
+        # Event-time specific weather forecast
+        weather_temp = event.get('weather_temp')
+        weather_precip = event.get('weather_precip')
+        weather_conditions = event.get('weather_conditions')
+        
+        if weather_temp is not None and weather_precip is not None:
+            # Show weather forecast for this specific event time
+            weather_icon = self.get_weather_icon(weather_conditions or "")
+            weather_text = f"{weather_icon} {weather_temp}°F"
+            
+            # Color code precipitation
+            if weather_precip >= 60:
+                precip_color = "#F44336"  # Red
+                precip_icon = "🌧️"
+            elif weather_precip >= 30:
+                precip_color = "#FF9800"  # Orange
+                precip_icon = "🌦️"
+            else:
+                precip_color = "#4CAF50"  # Green
+                precip_icon = "💧"
+            
+            weather_text += f"  {precip_icon} {weather_precip}%"
+            
+            # Show weather forecast
+            if hasattr(self, 'event_weather_label'):
+                self.event_weather_label.text = weather_text
+                self.event_weather_label.visible = True
+                self.event_weather_label.font_size = 12
+                self.event_weather_label.bold = False
+        else:
+            # No weather data available
+            if hasattr(self, 'event_weather_label'):
+                self.event_weather_label.visible = False
+        
+        # Weather warning (for outdoor events with bad conditions)
         warning = event.get('weather_warning')
         if warning:
             self.weather_warning_label.text = f"⚠️ {warning}"
@@ -123,6 +157,31 @@ class EventCard(EventCardTemplate):
             '$$$$': '#F44336'    # Red
         }
         return colors.get(cost_level, '#000000')
+    
+    
+    def get_weather_icon(self, conditions):
+        """Get weather icon emoji based on conditions"""
+        if not conditions:
+            return '🌤️'
+        
+        conditions_lower = conditions.lower()
+        
+        if 'clear' in conditions_lower or 'sunny' in conditions_lower:
+            return '☀️'
+        elif 'partly cloudy' in conditions_lower or 'few clouds' in conditions_lower:
+            return '⛅'
+        elif 'cloudy' in conditions_lower or 'overcast' in conditions_lower:
+            return '☁️'
+        elif 'rain' in conditions_lower or 'shower' in conditions_lower:
+            return '🌧️'
+        elif 'storm' in conditions_lower or 'thunder' in conditions_lower:
+            return '⛈️'
+        elif 'snow' in conditions_lower:
+            return '❄️'
+        elif 'fog' in conditions_lower or 'mist' in conditions_lower:
+            return '🌫️'
+        else:
+            return '🌤️'
     
     
     def favorite_button_click(self, **event_args):
@@ -191,6 +250,15 @@ class EventCard(EventCardTemplate):
         
         details.append(f"\n📝 Description:")
         details.append(event.get('description', 'No description available'))
+        
+        # Event-time weather forecast
+        if event.get('weather_temp') is not None:
+            details.append(f"\n🌤️ Weather Forecast (at event time):")
+            weather_icon = self.get_weather_icon(event.get('weather_conditions', ''))
+            details.append(f"   {weather_icon} {event['weather_temp']}°F")
+            details.append(f"   💧 {event['weather_precip']}% chance of rain")
+            if event.get('weather_conditions'):
+                details.append(f"   {event['weather_conditions'].title()}")
         
         if event.get('weather_warning'):
             details.append(f"\n⚠️ Weather Warning:")

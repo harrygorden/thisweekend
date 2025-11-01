@@ -7,6 +7,83 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - 2025-11-01
+
+#### Event-Specific Weather on Event Cards
+
+**Summary:** Added event-time specific weather forecasts directly to each event card for better user decision-making.
+
+**Changes:**
+
+1. **Event Serialization (`data_processor.py`)**
+   - Updated `serialize_events()` to fetch weather for each event's specific time
+   - Added `weather_temp`, `weather_precip`, `weather_conditions` to each event
+   - Uses `get_best_weather_values()` for hourly accuracy
+
+2. **EventCard UI (`EventCard`)**
+   - Updated `update_display()` to show event-time weather
+   - Displays: Weather icon, temperature, and precipitation percentage
+   - Color-coded precipitation (green <30%, orange 30-60%, red 60%+)
+   - Added `get_weather_icon()` method for consistent icons
+   - Enhanced event details popup with weather forecast section
+
+3. **User Protection (`MainApp`)**
+   - Disabled AI-generated weekend suggestions to prevent API costs
+   - Modified refresh button to inform users about auto-refresh
+   - Removed "Weekend Outlook: Loading..." redundant text
+   - Users can't trigger expensive ChatGPT calls
+
+**Impact:**
+- 🌤️ **Each event shows its specific weather** - no guessing needed
+- 📊 **Users see temp & rain % at event time** - actionable data
+- 💰 **Prevents accidental API costs** - suggestions disabled for users
+- 🎯 **Better informed decisions** - weather right on the event card
+
+**Example Event Card:**
+```
+Jazz Concert at Overton Park
+Saturday, November 2 • 7:30 PM
+📍 Overton Park Shell
+
+☀️ 72°F  💧 10%  ← Event-time forecast!
+
+⭐ Highly Recommended
+```
+
+**Files Modified:**
+- `server_code/data_processor.py` - Add weather to event serialization
+- `client_code/EventCard/__init__.py` - Display weather on cards
+- `client_code/MainApp/__init__.py` - Disable expensive features
+
+---
+
+### Changed - 2025-11-01
+
+#### User-Facing Features Disabled for Cost Control
+
+**Summary:** Disabled features that could trigger expensive API calls by regular users.
+
+**Changes:**
+- Removed AI-generated weekend suggestions (GPT-4.1 calls)
+- Modified refresh button to prevent manual data refreshes
+- Hidden "Weekend Outlook: Loading..." redundant text
+- Data still auto-refreshes via scheduled background tasks
+
+**Rationale:**
+- Each suggestion generation costs ~$0.10-0.15 (GPT-4.1)
+- Manual refresh triggers full data pipeline including AI analysis
+- Users don't need to manually refresh - auto-updates handle it
+- Event cards now have weather built-in, suggestions less critical
+
+**User Experience:**
+- ✅ Still see all event and weather data
+- ✅ Event cards show event-time weather
+- ✅ Recommendation scores guide choices
+- ✅ Can't accidentally trigger API costs
+- ℹ️ Refresh button shows info message instead
+
+---
+
 ### Fixed - 2025-11-01
 
 #### Future-Only Weather Display
