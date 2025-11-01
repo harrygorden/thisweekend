@@ -390,17 +390,15 @@ def parse_event_link_text(link_text, link_url, current_day, weekend_dates):
             if detailed_info.get('description') and len(detailed_info['description']) > 20:
                 event["description"] = detailed_info['description']
             
-            # Only override date if it's for this weekend (within 3 days)
-            # The /weekend page is updated Mon/Tue for upcoming weekend
-            # Individual event pages might show recurring events for future dates
-            if detailed_info.get('date'):
-                from . import date_utils
-                days_diff = (detailed_info['date'] - date_utils.get_current_central_date()).days
-                
-                # Only use the scraped date if it's within this weekend (0-3 days)
-                if 0 <= days_diff <= 3:
-                    event["date"] = detailed_info['date']
-                # Otherwise keep the weekend_dates assignment (more reliable for /weekend page)
+            # IMPORTANT: Do NOT override date from event pages!
+            # Event pages often show ALL occurrences of recurring events (Nov 7, Nov 14, etc.)
+            # The /weekend page listing under Friday/Saturday/Sunday is more reliable
+            # for determining which specific occurrence is THIS weekend.
+            # 
+            # We trust: The day assignment from the /weekend page (Fri/Sat/Sun header)
+            # We ignore: Dates from individual event pages (often wrong/future dates)
+            #
+            # If you need to debug date issues, check the weekend_dates assignment above
     except Exception:
         # If scraping individual page fails, use link text data
         pass
