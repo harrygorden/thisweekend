@@ -211,8 +211,10 @@ def extract_details_from_event_page(markdown):
         'start_time': None,
         'end_time': None,
         'cost_raw': None,
-        'description': None,
-        'date': None
+        'description': None
+        # NOTE: We do NOT extract 'date' from event pages
+        # Event pages show recurring events with multiple future dates
+        # We trust the Friday/Saturday/Sunday assignment from /weekend page instead
     }
     
     lines = markdown.split('\n')
@@ -275,14 +277,10 @@ def extract_details_from_event_page(markdown):
             details['cost_raw'] = cost_text
             continue
         
-        # Look for date patterns
-        if re.search(r'\*\*Date\*\*:?\s*(.+)', line, re.IGNORECASE):
-            match = re.search(r'\*\*Date\*\*:?\s*(.+)', line, re.IGNORECASE)
-            date_text = match.group(1).strip()
-            parsed_date = api_helpers.parse_date_string(date_text)
-            if parsed_date:
-                details['date'] = parsed_date
-            continue
+        # NOTE: We intentionally do NOT extract dates from event pages
+        # Event pages often show ALL occurrences (Nov 1, Nov 7, Nov 14, etc.)
+        # The /weekend page day header (Friday/Saturday/Sunday) is more reliable
+        # for determining THIS weekend's specific occurrence
         
         # Start collecting description after heading
         if line.startswith('# ') and not in_description_section:
