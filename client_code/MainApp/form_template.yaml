@@ -213,6 +213,14 @@ components:
         name: events_title
         properties: {align: left, background: '', bold: true, border: '', font: '', font_size: 20, foreground: '', icon: 'fa:calendar', icon_align: left, italic: false, role: headline, spacing_above: small, spacing_below: small, text: Weekend Events, tooltip: '', underline: false, visible: true}
         type: Label
+      - layout_properties: {width: 200}
+        name: sort_dropdown
+        properties: {align: right, background: '', border: '', enabled: true, font: '', font_size: null, foreground: '', include_placeholder: false, italic: false, placeholder: 'Sort by...', role: null, spacing_above: small, spacing_below: small, tooltip: 'Change sort order', visible: true}
+        type: DropDown
+        data_bindings:
+        - {code: '[("Soonest First", "time"), ("Recommended", "recommendation")]', property: items, writeback: false}
+        - {code: '''time''', property: selected_value, writeback: false}
+        event_bindings: {change: sort_dropdown_change}
       - layout_properties: {width: null}
         name: event_count_label
         properties: {align: right, background: '', bold: false, border: '', font: '', font_size: 14, foreground: '#666666', icon: '', icon_align: left, italic: false, role: null, spacing_above: small, spacing_below: small, text: Showing all events, tooltip: '', underline: false, visible: true}
