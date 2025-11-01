@@ -5,11 +5,6 @@ components:
       name: title_label
       properties: {align: left, background: '', bold: true, border: '', font: '', font_size: 32, foreground: white, icon: '', icon_align: left, italic: false, role: null, spacing_above: small, spacing_below: small, text: 🎉 This Weekend, tooltip: '', underline: false, visible: true}
       type: Label
-    - event_bindings: {click: refresh_button_click}
-      layout_properties: {width: null}
-      name: refresh_button
-      properties: {align: center, background: '', bold: false, border: '', enabled: true, font: '', font_size: null, foreground: white, icon: 'fa:refresh', icon_align: left, italic: false, role: outlined-button, spacing_above: small, spacing_below: small, text: '', tooltip: Refresh data, underline: false, visible: true}
-      type: Button
     - event_bindings: {click: itinerary_button_click}
       layout_properties: {width: null}
       name: itinerary_button

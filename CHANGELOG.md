@@ -128,28 +128,27 @@ Saturday, November 2 • 7:30 PM
 
 ### Changed - 2025-11-01
 
-#### Cost Control: Manual Refresh Disabled
+#### Cost Control: Removed Manual Refresh Button
 
-**Summary:** Disabled manual data refresh to prevent users from triggering expensive API calls, while keeping AI suggestions on page load.
+**Summary:** Removed manual refresh button entirely to prevent users from triggering expensive API calls.
 
 **Changes:**
-- Modified refresh button to show info message instead of refreshing
-- Removed "Weekend Outlook: Loading..." redundant text
-- Kept AI-generated weekend suggestions (load once on page load only)
-- Data still auto-refreshes via scheduled background tasks
+- Removed refresh button from header (was showing info message)
+- Kept AI-generated weekend suggestions (load once on page load)
+- Data auto-refreshes via scheduled background tasks only
 
 **Rationale:**
-- Manual refresh triggers full data pipeline (~$0.50 per refresh)
+- Manual refresh would trigger full data pipeline (~$0.50 per refresh)
 - Page load suggestions are acceptable (once per session)
-- Users don't need to manually refresh - auto-updates handle it
-- Prevents repeated/accidental expensive operations
+- Users don't need manual refresh - auto-updates handle it
+- Simpler UI without disabled/misleading button
 
 **User Experience:**
 - ✅ See AI weekend suggestions on page load
 - ✅ Event cards show event-time weather
 - ✅ Recommendation scores guide choices
-- ✅ Can't trigger manual refresh (controlled costs)
-- ℹ️ Refresh button shows auto-refresh info message
+- ✅ Cleaner header without unnecessary button
+- ✅ Data stays fresh via automatic updates
 
 ---
 
