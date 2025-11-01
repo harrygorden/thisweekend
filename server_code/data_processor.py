@@ -307,9 +307,7 @@ def get_filtered_events(filters=None):
 
 @anvil.server.callable
 def get_all_events(sort_by="recommendation"):
-    """
-    Get all future events from the database.
-    Callable from client-side code.
+    """Get all future events from database.
     
     Args:
         sort_by: Sort criteria ("recommendation", "time", "cost")
@@ -320,6 +318,7 @@ def get_all_events(sort_by="recommendation"):
     try:
         from . import date_utils
         
+        # Use fetch_only for performance - only get needed columns
         events = list(app_tables.events.search())
         print(f"Found {len(events)} total events in database")
         

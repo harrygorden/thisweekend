@@ -1,176 +1,151 @@
 # This Weekend - Memphis Event Planner
 
-An intelligent Anvil web application that helps you plan your weekend by combining real-time weather forecasts with local Memphis events, powered by AI for smart categorization and weather-aware recommendations.
+An intelligent Anvil web application that combines real-time weather forecasts with local Memphis events, powered by AI for smart categorization and weather-aware recommendations.
 
-![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)
+![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
 ![Anvil](https://img.shields.io/badge/Platform-Anvil-orange.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 
 ## 🌟 Features
 
-- **🌤️ Weather Integration:** Live weather forecasts for Friday, Saturday, and Sunday using OpenWeather One Call API 3.0
-- **📅 Event Scraping:** Automatic scraping of Memphis weekend events from ilovememphisblog.com
-- **🤖 AI-Powered Analysis:** GPT-4.1-mini automatically categorizes events:
-  - Indoor vs. Outdoor
-  - Adult vs. Family-Friendly
-  - Cost level (Free, $, $$, $$$, $$$$)
-  - Categories (Arts, Music, Sports, Food & Drink, etc.)
-- **🎯 Smart Recommendations:** GPT-4.1 generates weather-aware suggestions that match outdoor events with good weather
-- **🔍 Advanced Filtering:** Multi-criteria search by cost, category, audience type, day, and more
-- **📋 Itinerary Builder:** Create personalized weekend plans with conflict detection
-- **⏰ Automated Updates:** Scheduled background tasks refresh data weekly
+- **🌤️ Weather Integration** - Live forecasts for Friday, Saturday, and Sunday using OpenWeather One Call API 3.0
+- **📅 Event Scraping** - Automatic collection of Memphis weekend events from ilovememphisblog.com
+- **🤖 AI-Powered Analysis** - GPT-4.1-mini categorizes events (indoor/outdoor, audience type, cost, categories)
+- **🎯 Smart Recommendations** - Weather-aware suggestions that match outdoor events with good weather
+- **🔍 Advanced Filtering** - Multi-criteria search by cost, category, audience type, day, and more
+- **📋 Itinerary Builder** - Create personalized weekend plans with conflict detection
+- **⏰ Automated Updates** - Scheduled background tasks refresh data weekly
 
 ## 🏗️ Architecture
 
-**Frontend:** Anvil (Python-based web framework with drag-and-drop UI)  
-**Backend:** Anvil Server Modules (Python)  
+**Platform:** [Anvil](https://anvil.works) - Python-based web framework  
+**Backend:** Anvil Server Modules (Python 3.10+)  
 **Database:** Anvil Data Tables (PostgreSQL-backed)  
 **APIs:**
 - OpenWeather One Call API 3.0 (weather forecasts)
 - Firecrawl API (web scraping)
-- OpenAI API (event analysis)
+- OpenAI API (GPT-4.1-mini for analysis, GPT-4.1 for suggestions)
 
 ## 📂 Project Structure
 
 ```
 thisweekend/
-├── README.md                          # Project overview
-├── SETUP.md                           # Setup and deployment guide
-├── USER_GUIDE.md                      # User documentation
-├── SCHEDULED_TASKS.md                 # Background tasks guide
-├── LICENSE.txt                        # MIT license
-├── server_code/                       # Server-side Python modules
-│   ├── background_tasks.py            # Scheduled tasks (3 tasks)
-│   ├── weather_service.py             # OpenWeather API
-│   ├── scraper_service.py             # Firecrawl web scraping
-│   ├── ai_service.py                  # OpenAI analysis
-│   ├── data_processor.py              # Recommendation scores
-│   ├── admin_tools.py                 # Admin utilities
-│   ├── setup_schema.py                # Database setup
-│   └── requirements.txt               # Dependencies
-└── client_code/                       # Anvil UI forms
-    ├── AdminForm/                     # Admin panel
-    ├── MainApp/                       # Main user interface
-    ├── EventCard/                     # Event display component
-    └── WeatherCard/                   # Weather display component
+├── server_code/              # Backend Python modules
+│   ├── background_tasks.py   # Scheduled task orchestration
+│   ├── weather_service.py    # OpenWeather API integration
+│   ├── scraper_service.py    # Firecrawl web scraping
+│   ├── ai_service.py         # OpenAI event analysis
+│   ├── data_processor.py     # Recommendation engine
+│   ├── admin_tools.py        # Admin utilities
+│   ├── config.py             # Configuration constants
+│   ├── api_helpers.py        # Common utilities
+│   └── requirements.txt      # Python dependencies
+├── client_code/              # Frontend Anvil forms
+│   ├── MainApp/              # Main user interface
+│   ├── AdminForm/            # Admin panel
+│   ├── EventCard/            # Event display component
+│   └── WeatherCard/          # Weather display component
+├── theme/                    # Anvil theme/styling
+├── README.md                 # This file
+├── DEPLOYMENT.md             # Setup & deployment guide
+└── ADMIN_GUIDE.md            # Administrator operations guide
 ```
 
 ## 🚀 Quick Start
 
-### ✅ Phase 1 Complete!
+### Prerequisites
 
-All server-side code has been implemented. The complete data pipeline is ready to test!
+- Anvil account ([sign up](https://anvil.works))
+- GitHub account
+- API keys:
+  - [OpenWeather API](https://openweathermap.org/api) - One Call API 3.0 access
+  - [Firecrawl API](https://firecrawl.dev)
+  - [OpenAI API](https://openai.com)
 
-### Where You Are Now
+### Deployment
 
-You've completed:
-- ✅ Anvil app created
-- ✅ API keys configured in Anvil Secrets
-- ✅ Empty Data Tables created
-- ✅ All 7 server modules built and ready
+See [DEPLOYMENT.md](DEPLOYMENT.md) for complete setup instructions.
 
-### ✨ Complete AdminForm Ready!
-
-**No manual work in Anvil editor!** A complete admin panel is included.
-
-**👉 See [SETUP.md](SETUP.md) for complete setup instructions**
-
-**Super quick setup:**
-1. Push this code to GitHub
-2. In Anvil: "Pull from Git"  
-3. Set `AdminForm` as startup form
-4. Click **Run** ▶️
-5. Click **"Setup Database"** button
-6. All 33 columns created automatically! ✨
-
-**What you get:**
-- 🎛️ Complete admin panel with testing functions
-- ⚙️ One-click database setup
-- 🔍 Health checks and monitoring
-- 📊 Data refresh controls
-- 📝 Real-time status output
-
-**See:** [USER_GUIDE.md](USER_GUIDE.md) for complete admin interface documentation
+**Quick overview:**
+1. Create Anvil app and connect to GitHub
+2. Install Python dependencies (`firecrawl-py`, `openai`, `pytz`)
+3. Configure API keys in Anvil Secrets
+4. Create Data Tables in Anvil UI
+5. Pull code from GitHub
+6. Run admin setup to auto-create database schema
+7. Configure scheduled tasks (optional, requires paid plan)
 
 ## 📖 Documentation
 
-- **[SETUP.md](SETUP.md)** ⚡ - Complete setup and deployment guide
-- **[USER_GUIDE.md](USER_GUIDE.md)** 📚 - Admin interface and user documentation
-- **[SCHEDULED_TASKS.md](SCHEDULED_TASKS.md)** 🕒 - Automated background tasks guide
-- **[server_code/requirements.txt](server_code/requirements.txt)** 📦 - Python dependencies
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Complete setup and deployment guide
+- **[ADMIN_GUIDE.md](ADMIN_GUIDE.md)** - Administrator operations and troubleshooting
+- **[server_code/requirements.txt](server_code/requirements.txt)** - Python dependencies
 
 ## 🗄️ Database Schema
 
 ### `events` Table (17 columns)
-Stores all scraped and analyzed event data.
+Stores scraped events with AI analysis (category, audience, indoor/outdoor, cost).
 
 ### `weather_forecast` Table (9 columns)
-Caches weather forecasts for the upcoming weekend.
+Caches weather forecasts for the upcoming weekend (daily summaries).
 
-### `scrape_log` Table (7 columns)
+### `hourly_weather` Table (11 columns)
+Stores hourly weather data for precise event-time forecasts.
+
+###`scrape_log` Table (7 columns)
 Tracks background task execution and errors.
 
-See [SETUP.md](SETUP.md) for detailed setup instructions.
+**Setup:** All columns created automatically via admin panel's "Setup Database" button.
 
-## 🔧 Development Workflow
+## 🔧 Development
 
-1. **Server Code Changes:**
-   - Edit Python files in `server_code/` locally
-   - Commit and push to GitHub
-   - Pull changes in Anvil editor
+### Server Code Changes
 
-2. **UI Changes:**
-   - Must be made in Anvil's visual editor
-   - Forms, components, and styling done in Anvil UI
+1. Edit Python files in `server_code/` locally
+2. Commit and push to GitHub
+3. Pull changes in Anvil editor
 
-3. **Data Table Changes:**
-   - Schema changes must be made in Anvil UI
-   - Use the setup script for initial column creation
+### UI Changes
 
-## 📅 Development Timeline
+- Must be made in Anvil's visual editor
+- Forms, components, and styling done in Anvil UI
+- Changes automatically synced to GitHub
 
-- **Full Build:** 20-32 days
-- **MVP:** 17-27 days
+### Data Table Changes
 
-See [project_plan.md](project_plan.md) for detailed phase breakdown.
+- Schema changes must be made in Anvil UI
+- Use setup script for initial column creation
+- Modifications require admin panel "Setup Database"
 
-## 💰 Cost Estimates
+## 💰 Operating Costs
 
 Weekly operation (assuming 50 events/week):
-- **OpenWeather:** ~$0.02/week
-- **Firecrawl:** Varies by plan
-- **OpenAI:** ~$0.30/week (GPT-4.1-mini for analysis + GPT-4.1 for suggestions)
-- **Total:** ~$0.32-$0.50/week
+- **OpenWeather:** FREE (within free tier limits)
+- **Firecrawl:** ~$0.10/week (varies by plan)
+- **OpenAI:** ~$0.20-$0.40/week (GPT-4.1-mini + GPT-4.1)
+- **Total:** ~$0.30-$0.50/week or ~$1.20-$2.00/month
 
-## 🔑 Required Anvil Secrets
+## 🔑 Required API Configuration
 
-Configure these in Anvil App Settings → Secrets:
+Configure in Anvil App Settings → Secrets:
 
 1. `OPENWEATHER_API_KEY` - OpenWeather One Call API 3.0
 2. `FIRECRAWL_API_KEY` - Firecrawl web scraping
 3. `OPENAI_API_KEY` - OpenAI ChatGPT API
+4. `ADMIN_PASSWORD` - Password for admin panel access
 
-## 📊 Project Status
+## 📊 Features Status
 
-### ✅ Completed
-- **Phase 1.1-1.3:** Server architecture complete (7 modules)
-- **Phase 2:** Weather API integration ✅
-- **Phase 3:** Event scraping & parsing ✅
-- **Phase 4:** AI event analysis ✅
-- **Phase 5:** Recommendation engine ✅
-- **Phase 5.5:** Background task orchestration ✅
-
-### ⏳ Current
-- **Phase 1.2:** Add columns to Data Tables ← **YOU ARE HERE**
-
-### 🔜 Next
-- **Phase 2-5:** Test complete data pipeline
-- **Phase 6:** Build Anvil UI (weather display, event cards)
-- **Phase 7:** Implement filtering & search
-- **Phase 8:** Build itinerary builder
-- **Phase 9-12:** Testing, polish, deployment
-
-All core features are implemented and tested.
+✅ **Complete & Production-Ready**
+- Weather API integration (OpenWeather One Call API 3.0)
+- Event scraping & parsing (Firecrawl)
+- AI event analysis (OpenAI GPT-4.1-mini)
+- Weather-aware recommendation engine
+- Advanced filtering (cost, category, audience, day, indoor/outdoor)
+- Itinerary builder
+- Admin panel with testing tools
+- Scheduled background tasks
+- Complete UI with weather cards, event cards, and filtering
 
 ## 🎯 Success Criteria
 
@@ -186,7 +161,7 @@ All core features are implemented and tested.
 
 ## 🤝 Contributing
 
-This is a personal project, but suggestions and feedback are welcome!
+This is a personal project, but suggestions and feedback are welcome! Open an issue or pull request.
 
 ## 📝 License
 
@@ -202,8 +177,8 @@ MIT License - feel free to use this as a template for your own projects.
 
 ## 📧 Contact
 
-For questions or suggestions, please open an issue in the repository.
+For questions or suggestions, please open an issue in this repository.
 
 ---
 
-**Built with ❤️ in Memphis, TN**
+**Built with ❤️ for Memphis weekends**

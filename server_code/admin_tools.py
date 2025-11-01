@@ -596,28 +596,4 @@ def _test_firecrawl_url(api_key, url, use_stealth=False):
     return result
 
 
-# Note: create_test_events and clear_test_events are defined in test_data.py
-# These are wrapper functions for backwards compatibility with admin forms
-def create_test_events_wrapper():
-    """
-    Create realistic test events for UI testing without using external APIs.
-    Wrapper for test_data.create_test_events() (use that directly instead)
-    
-    Returns:
-        int: Number of test events created
-    """
-    from . import test_data
-    return test_data.create_test_events()
-
-
-def clear_test_events_wrapper():
-    """
-    Clear only test events (identified by special ID pattern).
-    Wrapper for test_data.clear_test_events() (use that directly instead)
-    
-    Returns:
-        int: Number of test events deleted
-    """
-    from . import test_data
-    return test_data.clear_test_events()
 

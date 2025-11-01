@@ -1,12 +1,9 @@
-"""
-Configuration module for This Weekend app.
-Contains constants and configuration values used across the application.
-"""
+"""Configuration constants for This Weekend app."""
 
-# Memphis, TN Coordinates
+# Memphis coordinates and timezone
 MEMPHIS_LAT = 35.1495
 MEMPHIS_LON = -90.0490
-MEMPHIS_TIMEZONE = "America/Chicago"  # Central Time
+MEMPHIS_TIMEZONE = "America/Chicago"
 
 # Target Website
 TARGET_WEBSITE_URL = "https://ilovememphisblog.com/weekend"
@@ -15,13 +12,11 @@ TARGET_WEBSITE_URL = "https://ilovememphisblog.com/weekend"
 OPENWEATHER_API_VERSION = "3.0"
 OPENWEATHER_BASE_URL = "https://api.openweathermap.org/data/3.0/onecall"
 
-# OpenAI Configuration
-# GPT-4.1-mini for data analysis (fast, cost-effective)
-OPENAI_ANALYSIS_MODEL = "gpt-4.1-mini"
-# GPT-4.1 for user-facing text generation (high quality)
-OPENAI_TEXT_MODEL = "gpt-4.1"
-OPENAI_MAX_TOKENS = 500  # Per event analysis
-OPENAI_TEMPERATURE = 0.3  # Lower temperature for more consistent categorization
+# OpenAI models and parameters
+OPENAI_ANALYSIS_MODEL = "gpt-4.1-mini"  # Fast, cost-effective for data analysis
+OPENAI_TEXT_MODEL = "gpt-4.1"  # High quality for user-facing text
+OPENAI_MAX_TOKENS = 500
+OPENAI_TEMPERATURE = 0.3  # Low for consistent categorization
 
 # Firecrawl Configuration
 FIRECRAWL_TIMEOUT = 60  # seconds
@@ -39,21 +34,11 @@ COST_LEVELS = {
     "$$$$": "$$$$"
 }
 
-# Category Options (will be expanded based on AI analysis)
+# Event categories
 CATEGORIES = [
-    "Arts",
-    "Music",
-    "Sports",
-    "Food & Drink",
-    "Outdoor Activities",
-    "Cultural Events",
-    "Theater/Performance",
-    "Family/Kids",
-    "Nightlife",
-    "Shopping",
-    "Educational",
-    "Community Events",
-    "Other"
+    "Arts", "Music", "Sports", "Food & Drink", "Outdoor Activities",
+    "Cultural Events", "Theater/Performance", "Family/Kids", "Nightlife",
+    "Shopping", "Educational", "Community Events", "Other"
 ]
 
 # Audience Types
