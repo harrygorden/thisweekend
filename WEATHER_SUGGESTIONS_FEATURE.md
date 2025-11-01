@@ -13,9 +13,11 @@ Added an AI-powered "Weekend Ideas" section that provides personalized, weather-
 
 ### AI-Powered Suggestions
 - Uses OpenAI GPT to generate friendly, conversational recommendations
-- Highlights outdoor activities when weather is nice
-- Suggests indoor alternatives when weather is rainy or extreme
-- 2-3 sentences of warm, friendly guidance
+- Recommends 3-4 **specific events** from scraped data (not generic activities)
+- Prioritizes outdoor events when weather is nice
+- Prioritizes indoor events when weather is rainy or extreme
+- Explains WHY each event is suited for the weather conditions
+- 3-4 sentences of warm, friendly guidance
 
 ### Seamless Integration
 - Loads automatically when the page loads
@@ -36,8 +38,9 @@ Added an AI-powered "Weekend Ideas" section that provides personalized, weather-
 
 **`build_suggestions_prompt(weather_data, events)`**
 - Builds the ChatGPT prompt
-- Includes weather summary, event counts, and sample events
-- Provides clear instructions for tone and content
+- Includes weather summary and top 15 events with details
+- Provides event venue type, day, cost, and location
+- Instructs AI to recommend 3-4 specific events with weather reasoning
 
 **`get_weekend_suggestions()`** (Server Callable)
 - Client-callable function
@@ -70,25 +73,30 @@ Added new `suggestions_section` ColumnPanel with:
 
 ### Nice Weather:
 ```
-This weekend's looking gorgeous! Perfect weather for checking out outdoor 
-festivals, farmers markets, or catching a concert under the stars. If you 
-need a break from the heat, there are plenty of air-conditioned museums 
-and theaters too.
+With sunny skies and perfect temps this weekend, I'd definitely check out 
+the Memphis Japan Festival on Sunday - perfect for enjoying Japanese culture 
+outdoors. The Farmers Market at Agricenter is another great option if you're 
+looking for fresh produce and local crafts on Saturday morning. Don't miss 
+the Broad Avenue Art Walk on Friday evening, especially with these beautiful 
+fall temperatures!
 ```
 
 ### Rainy Weather:
 ```
-Looks like we've got some rain in the forecast this weekend. Great time to 
-explore Memphis' indoor scene - think museums, theaters, and cozy cafes. 
-There are still some covered outdoor markets if you want fresh air without 
-getting drenched!
+With rain expected Saturday and Sunday, the Levitt Shell Indoor Concert 
+Series on Saturday is perfect for staying dry while catching live music. 
+The Memphis Brooks Museum of Art is another excellent rainy-day choice with 
+their new exhibition. If you want something interactive, check out the 
+Children's Museum of Memphis on Sunday - great for families and completely 
+indoors!
 ```
 
 ### Mixed Weather:
 ```
-Saturday's looking beautiful for outdoor adventures, but Sunday might be 
-better for indoor activities. Consider front-loading your outdoor plans 
-and saving museums and shows for later in the weekend!
+Saturday's looking gorgeous at 72°F with sunshine - perfect for the Cooper-Young 
+Festival's outdoor vendors and live music. Sunday might get some showers though, 
+so I'd save the Dixon Gallery & Gardens indoor exhibits for then. The Crosstown 
+Concourse First Friday event works great for tonight since it's mostly covered!
 ```
 
 ## User Experience Flow
@@ -105,8 +113,9 @@ and saving museums and shows for later in the weekend!
 ### API Usage
 - **Model**: GPT-3.5-turbo or GPT-4 (from config.OPENAI_MODEL)
 - **Temperature**: 0.7 (more creative for suggestions)
-- **Max Tokens**: 300 (keeps suggestions concise)
-- **System Prompt**: "Friendly local events guide for Memphis, TN"
+- **Max Tokens**: 400 (allows for specific event recommendations with explanations)
+- **System Prompt**: "Recommend specific events from the provided list based on weather conditions"
+- **Input**: Top 15 events with venue type, day, cost, location
 
 ### Error Handling
 - Catches API failures gracefully
@@ -122,20 +131,22 @@ and saving museums and shows for later in the weekend!
 
 ## Benefits
 
-1. **User Engagement**: Warm, personalized greeting sets friendly tone
-2. **Weather Context**: Helps users plan based on forecast
-3. **Discovery**: Encourages exploration of event types they might not filter for
-4. **Smart Filtering**: Pre-filters by weather suitability before user even looks
-5. **Conversational**: Feels like advice from a local friend
+1. **Actionable Recommendations**: Specific event names users can immediately look for
+2. **Weather-Smart**: Events matched to actual forecast conditions
+3. **Discovery**: Highlights top-rated events users might miss
+4. **Context**: Explains WHY each event suits the weather
+5. **Conversational**: Feels like advice from a knowledgeable local friend
+6. **Saves Time**: Pre-curated picks instead of browsing hundreds of events
 
 ## Future Enhancements
 
 Potential improvements:
 - Cache suggestions for 1-2 hours to reduce API calls
 - Add user preferences (family-friendly, budget-conscious, etc.)
-- Include specific event recommendations (not just general types)
+- Make event names clickable to jump to that event in the list
 - Show different suggestions for each day (Friday/Saturday/Sunday specific)
 - Add emoji to make suggestions more visual
+- Highlight recommended events in the main event list
 
 ## Files Modified
 

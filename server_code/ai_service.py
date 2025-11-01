@@ -282,7 +282,7 @@ def generate_weather_aware_suggestions(weather_data, events):
         messages=[
             {
                 "role": "system",
-                "content": "You are a friendly local events guide for Memphis, TN. Provide warm, conversational suggestions for weekend activities based on the weather forecast."
+                "content": "You are a friendly local events guide for Memphis, TN. Recommend specific events from the provided list based on weather conditions."
             },
             {
                 "role": "user",
@@ -290,7 +290,7 @@ def generate_weather_aware_suggestions(weather_data, events):
             }
         ],
         temperature=0.7,  # More creative for suggestions
-        max_tokens=300  # Keep suggestions concise
+        max_tokens=400  # Allow for specific event recommendations with explanations
     )
     
     # Extract response
@@ -318,42 +318,48 @@ def build_suggestions_prompt(weather_data, events):
             f"{day['conditions']}, {day['precipitation_chance']}% rain"
         )
     
-    # Count outdoor vs indoor events
-    outdoor_events = [e for e in events if e.get('is_outdoor')]
-    indoor_events = [e for e in events if e.get('is_indoor')]
+    # Separate events by weather suitability
+    # Good for nice weather (outdoor, low rain days)
+    outdoor_suitable = []
+    # Good for rainy weather (indoor, any day)
+    indoor_suitable = []
     
-    # Sample a few interesting events for context
-    sample_events = []
-    for event in events[:10]:  # Top 10 by recommendation
+    for event in events[:20]:  # Top 20 by recommendation score
+        if event.get('is_outdoor'):
+            outdoor_suitable.append(event)
+        if event.get('is_indoor'):
+            indoor_suitable.append(event)
+    
+    # Build event details for AI
+    event_details = []
+    for event in events[:15]:  # Top 15 events
         venue_type = "outdoor" if event.get('is_outdoor') else "indoor"
-        sample_events.append(
-            f"- {event['title']} ({venue_type}, {event['day_name']})"
+        cost = event.get('cost_level', '$$')
+        event_details.append(
+            f"- {event['title']} ({venue_type}, {event['day_name']}, {cost}, {event.get('location', 'TBD')})"
         )
     
-    prompt = f"""Based on this weekend's weather forecast and available events in Memphis, TN, write 2-3 short, friendly sentences suggesting what types of activities would be most enjoyable.
+    prompt = f"""Based on this weekend's weather forecast, recommend 3-4 SPECIFIC events from the list below that would be most enjoyable given the conditions.
 
 Weather Forecast:
 {chr(10).join(weather_summary)}
 
-Available Events:
-- {len(outdoor_events)} outdoor events
-- {len(indoor_events)} indoor events
-
-Some examples:
-{chr(10).join(sample_events[:8])}
+Available Events (pre-sorted by recommendation score):
+{chr(10).join(event_details)}
 
 Instructions:
-- If weather is nice (low rain chance, comfortable temps), encourage outdoor activities
-- If weather is rainy or very hot/cold, suggest indoor alternatives
-- Be warm and conversational, like talking to a friend
-- Keep it to 2-3 sentences total
-- Don't mention specific event names, just general activity types
-- Focus on what makes the weekend special weather-wise
+- Recommend 3-4 SPECIFIC event names from the list above
+- If weather is nice (low rain, comfortable temps), prioritize outdoor events
+- If weather is rainy or extreme, prioritize indoor events
+- Mix different types of activities if possible
+- Keep it to 3-4 sentences total
+- Be warm and conversational, like a local friend giving advice
+- Briefly explain WHY each event is good for the weather
 
-Example good response:
-"This weekend's looking gorgeous! Perfect weather for checking out outdoor festivals, farmers markets, or catching a concert under the stars. If you need a break from the heat, there are plenty of air-conditioned museums and theaters too."
+Example format:
+"With [weather description], I'd definitely check out [Event Name] on [Day] - perfect for [reason]. [Event Name] is another great option if you're looking for [activity type]. Don't miss [Event Name], especially with this [weather condition]!"
 
-Now write suggestions for THIS weekend:"""
+Now write specific event recommendations for THIS weekend:"""
     
     return prompt
 
