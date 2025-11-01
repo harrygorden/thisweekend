@@ -50,10 +50,20 @@ def is_event_in_future(event_date, event_time_str=None):
     if isinstance(event_date, datetime):
         event_date = event_date.date()
     
-    # If no time provided, consider the whole day
+    # If no time provided, be conservative
     if not event_time_str:
-        # Event is in the future if date is today or later
-        return event_date >= now_central.date()
+        # If event is today and it's past 6 PM, consider it past
+        # (Most events without times are all-day or don't have reliable end times)
+        if event_date == now_central.date():
+            # It's today - check if it's late in the day (after 6 PM)
+            if now_central.hour >= 18:
+                # After 6 PM, hide today's events without specific times
+                return False
+            else:
+                # Before 6 PM, still show today's events
+                return True
+        # For future dates, show the event
+        return event_date > now_central.date()
     
     # Parse the time string
     try:

@@ -155,12 +155,15 @@ def sanitize_text(text):
 
 def get_weekend_dates():
     """
-    Get the upcoming Friday, Saturday, and Sunday dates.
+    Get the upcoming Friday, Saturday, and Sunday dates (Central Time).
     
     Returns:
         dict: Dictionary with 'friday', 'saturday', 'sunday' as datetime.date objects
     """
-    today = datetime.now().date()
+    from . import date_utils
+    
+    # Use Central Time, not UTC
+    today = date_utils.get_current_central_date()
     current_weekday = today.weekday()  # Monday = 0, Sunday = 6
     
     # Calculate days until next Friday (4 = Friday)
@@ -174,6 +177,8 @@ def get_weekend_dates():
     friday = today + timedelta(days=days_to_friday)
     saturday = friday + timedelta(days=1)
     sunday = friday + timedelta(days=2)
+    
+    print(f"Weekend dates (Central Time): Fri={friday}, Sat={saturday}, Sun={sunday}")
     
     return {
         "friday": friday,
