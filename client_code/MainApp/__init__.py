@@ -100,11 +100,33 @@ class MainApp(MainAppTemplate):
                         )
                         self.weather_container.add_component(fallback_label)
                 
-                # Update summary text
+                # Update summary text with granular information
                 if len(weather_data) >= 3:
+                    # Find best and worst precipitation
+                    all_precips = []
+                    for day in weather_data[:3]:
+                        all_precips.append(day.get('precipitation_chance', 0))
+                        if day.get('morning'):
+                            all_precips.append(day['morning'].get('precipitation_chance', 0))
+                        if day.get('afternoon'):
+                            all_precips.append(day['afternoon'].get('precipitation_chance', 0))
+                        if day.get('evening'):
+                            all_precips.append(day['evening'].get('precipitation_chance', 0))
+                    
+                    max_precip = max(all_precips) if all_precips else 0
+                    
+                    # Build summary
+                    temp_range = f"{int(weather_data[0]['temp_low'])}-{int(weather_data[2]['temp_high'])}°F"
+                    
+                    if max_precip >= 60:
+                        weather_note = f"⚠️ Prepare for rain (up to {int(max_precip)}% chance)"
+                    elif max_precip >= 30:
+                        weather_note = f"🌦️ Some rain possible ({int(max_precip)}% chance)"
+                    else:
+                        weather_note = f"☀️ Mostly clear (only {int(max_precip)}% rain chance)"
+                    
                     self.weather_summary_label.text = (
-                        f"Weekend Outlook: {weather_data[0]['conditions']} to {weather_data[2]['conditions']}, "
-                        f"{int(weather_data[0]['temp_low'])}-{int(weather_data[2]['temp_high'])}°F"
+                        f"Weekend Outlook: {temp_range} | {weather_note}"
                     )
             else:
                 self.weather_summary_label.text = "No weather data available"

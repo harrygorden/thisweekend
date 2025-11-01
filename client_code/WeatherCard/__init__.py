@@ -38,11 +38,10 @@ class WeatherCard(WeatherCardTemplate):
         # Day name
         self.day_label.text = weather.get('day_name', 'Unknown')
         
-        # Temperature
+        # Temperature - Overall for the day
         temp_high = weather.get('temp_high', 0)
         temp_low = weather.get('temp_low', 0)
-        self.temp_label.text = f"{int(temp_high)}°F"
-        self.temp_range_label.text = f"Low: {int(temp_low)}°F"
+        self.temp_label.text = f"{int(temp_high)}°F / {int(temp_low)}°F"
         
         # Conditions with weather icon
         conditions = weather.get('conditions', 'Unknown')
@@ -52,9 +51,9 @@ class WeatherCard(WeatherCardTemplate):
         weather_icon = self.get_weather_icon(conditions)
         self.weather_icon_label.text = weather_icon
         
-        # Precipitation
+        # Precipitation (overall for the day)
         precip = weather.get('precipitation_chance', 0)
-        self.precip_label.text = f"💧 {int(precip)}%"
+        self.precip_label.text = f"💧 {int(precip)}% rain"
         
         # Set precipitation color
         if precip >= 60:
@@ -68,8 +67,54 @@ class WeatherCard(WeatherCardTemplate):
         wind = weather.get('wind_speed', 0)
         self.wind_label.text = f"💨 {int(wind)} mph"
         
+        # Time period breakdowns
+        self.display_time_periods(weather)
+        
         # Set card background based on conditions
         self.set_card_style(conditions, precip)
+    
+    
+    def display_time_periods(self, weather):
+        """Display morning/afternoon/evening forecast breakdowns"""
+        # Check if we have time period data
+        morning = weather.get('morning')
+        afternoon = weather.get('afternoon')
+        evening = weather.get('evening')
+        
+        # Build time period text
+        period_lines = []
+        
+        if morning:
+            morning_icon = self.get_weather_icon(morning.get('conditions', ''))
+            morning_temp = morning.get('temp_avg', 0)
+            morning_precip = morning.get('precipitation_chance', 0)
+            period_lines.append(
+                f"{morning_icon} Morning: {int(morning_temp)}°F, {int(morning_precip)}% rain"
+            )
+        
+        if afternoon:
+            afternoon_icon = self.get_weather_icon(afternoon.get('conditions', ''))
+            afternoon_temp = afternoon.get('temp_avg', 0)
+            afternoon_precip = afternoon.get('precipitation_chance', 0)
+            period_lines.append(
+                f"{afternoon_icon} Afternoon: {int(afternoon_temp)}°F, {int(afternoon_precip)}% rain"
+            )
+        
+        if evening:
+            evening_icon = self.get_weather_icon(evening.get('conditions', ''))
+            evening_temp = evening.get('temp_avg', 0)
+            evening_precip = evening.get('precipitation_chance', 0)
+            period_lines.append(
+                f"{evening_icon} Evening: {int(evening_temp)}°F, {int(evening_precip)}% rain"
+            )
+        
+        # Display time periods if we have any
+        if period_lines:
+            # Check if temp_range_label exists and update it with time periods
+            if hasattr(self, 'temp_range_label'):
+                self.temp_range_label.text = "\n".join(period_lines)
+                self.temp_range_label.font_size = 11
+                self.temp_range_label.align = "left"
     
     
     def get_weather_icon(self, conditions):

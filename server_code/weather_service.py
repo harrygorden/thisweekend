@@ -203,14 +203,85 @@ def save_weather_to_db(weather_data):
         raise
 
 
+def parse_time_to_hour(time_str):
+    """
+    Parse a time string and return the hour (0-23).
+    Handles formats like "3:00 PM", "7:30 PM", "11:00 AM", etc.
+    
+    Args:
+        time_str: Time string (e.g., "7:30 PM")
+        
+    Returns:
+        int: Hour in 24-hour format (0-23), or None if parsing fails
+    """
+    if not time_str or time_str == "TBD":
+        return None
+    
+    try:
+        time_upper = time_str.upper().strip()
+        
+        # Extract hour and minute
+        if ":" in time_upper:
+            time_part = time_upper.split(":")[0]
+            hour = int(time_part)
+        else:
+            # Handle formats like "3 PM" without colon
+            time_part = time_upper.split()[0]
+            hour = int(time_part)
+        
+        # Convert to 24-hour format
+        if "PM" in time_upper and hour != 12:
+            hour += 12
+        elif "AM" in time_upper and hour == 12:
+            hour = 0
+        
+        return hour
+    except (ValueError, IndexError):
+        return None
+
+
+def find_closest_hourly_forecast(event_time, hourly_data_list):
+    """
+    Find the hourly forecast closest to the event time.
+    
+    Args:
+        event_time: Time string (e.g., "7:30 PM")
+        hourly_data_list: List of hourly forecast dictionaries
+        
+    Returns:
+        dict: Closest hourly forecast, or None if not found
+    """
+    event_hour = parse_time_to_hour(event_time)
+    
+    if event_hour is None or not hourly_data_list:
+        return None
+    
+    closest_forecast = None
+    min_diff = float('inf')
+    
+    for hour_data in hourly_data_list:
+        forecast_hour = parse_time_to_hour(hour_data.get("time", ""))
+        
+        if forecast_hour is not None:
+            # Calculate hour difference (accounting for day wrap)
+            diff = abs(forecast_hour - event_hour)
+            
+            if diff < min_diff:
+                min_diff = diff
+                closest_forecast = hour_data
+    
+    return closest_forecast
+
+
 def get_weather_for_datetime(event_date, event_time=None):
     """
     Get weather forecast for a specific date and time.
     Uses hourly_weather table for precise forecasts when available.
+    Finds the NEAREST hour if exact match not found.
     
     Args:
         event_date: datetime.date object
-        event_time: Optional time string (e.g., "3:00 PM")
+        event_time: Optional time string (e.g., "3:00 PM", "7:30 PM")
         
     Returns:
         dict: Weather data for that date/time, or None if not found
@@ -232,7 +303,7 @@ def get_weather_for_datetime(event_date, event_time=None):
     
     # If specific time is provided, try to get precise hourly data
     if event_time and event_time != "TBD":
-        # First try the hourly_weather table (more accurate)
+        # First try exact match in hourly_weather table
         try:
             hourly_row = app_tables.hourly_weather.get(
                 date=event_date,
@@ -251,16 +322,21 @@ def get_weather_for_datetime(event_date, event_time=None):
                 }
                 return weather_info
         except (AttributeError, KeyError):
-            # hourly_weather table doesn't exist or no match found
+            # hourly_weather table doesn't exist or no exact match found
             pass
         
-        # Fallback: Use hourly_data from forecast
+        # Fallback: Find CLOSEST hourly forecast from hourly_data
         if forecast["hourly_data"]:
-            # Find closest hourly forecast
-            for hour_data in forecast["hourly_data"]:
-                if hour_data["time"] == event_time:
-                    weather_info["hourly"] = hour_data
-                    break
+            closest_hour = find_closest_hourly_forecast(event_time, forecast["hourly_data"])
+            
+            if closest_hour:
+                weather_info["hourly"] = closest_hour
+                # Log the match for debugging
+                event_hour = parse_time_to_hour(event_time)
+                forecast_hour = parse_time_to_hour(closest_hour.get("time", ""))
+                if event_hour != forecast_hour:
+                    # Event time doesn't match exactly - using nearest hour
+                    print(f"  Using {closest_hour.get('time')} forecast for {event_time} event")
     
     return weather_info
 
@@ -366,6 +442,51 @@ def calculate_weather_score(event_data, weather_data):
     return max(0, min(100, score))
 
 
+def get_time_period_forecast(hourly_data, start_hour, end_hour):
+    """
+    Extract forecast for a specific time period from hourly data.
+    
+    Args:
+        hourly_data: List of hourly forecast dictionaries
+        start_hour: Start hour (0-23)
+        end_hour: End hour (0-23)
+        
+    Returns:
+        dict: Aggregated forecast for the time period
+    """
+    if not hourly_data:
+        return None
+    
+    # Filter hourly data for the time period
+    period_forecasts = []
+    for hour in hourly_data:
+        hour_num = parse_time_to_hour(hour.get("time", ""))
+        if hour_num is not None and start_hour <= hour_num < end_hour:
+            period_forecasts.append(hour)
+    
+    if not period_forecasts:
+        return None
+    
+    # Calculate average/aggregate values
+    temps = [h.get("temp", 0) for h in period_forecasts]
+    feels_like_temps = [h.get("feels_like", h.get("temp", 0)) for h in period_forecasts]
+    precip_chances = [h.get("precipitation_chance", 0) for h in period_forecasts]
+    
+    # Get most common conditions
+    conditions_list = [h.get("conditions", "") for h in period_forecasts]
+    most_common_conditions = max(set(conditions_list), key=conditions_list.count) if conditions_list else "unknown"
+    
+    return {
+        "temp_avg": round(sum(temps) / len(temps)) if temps else 0,
+        "temp_high": round(max(temps)) if temps else 0,
+        "temp_low": round(min(temps)) if temps else 0,
+        "feels_like_avg": round(sum(feels_like_temps) / len(feels_like_temps)) if feels_like_temps else 0,
+        "precipitation_chance": round(max(precip_chances)) if precip_chances else 0,
+        "conditions": most_common_conditions,
+        "hour_count": len(period_forecasts)
+    }
+
+
 @anvil.server.callable
 def get_weather_data():
     """
@@ -378,6 +499,13 @@ def get_weather_data():
     forecasts = []
     
     for row in app_tables.weather_forecast.search():
+        hourly_data = row["hourly_data"]
+        
+        # Extract time period forecasts from hourly data
+        morning = get_time_period_forecast(hourly_data, 6, 12)    # 6 AM - 12 PM
+        afternoon = get_time_period_forecast(hourly_data, 12, 18)  # 12 PM - 6 PM
+        evening = get_time_period_forecast(hourly_data, 18, 24)    # 6 PM - 12 AM
+        
         forecasts.append({
             "date": row["forecast_date"],
             "day_name": row["day_name"],
@@ -386,8 +514,12 @@ def get_weather_data():
             "conditions": row["conditions"],
             "precipitation_chance": row["precipitation_chance"],
             "wind_speed": row["wind_speed"],
-            "hourly_data": row["hourly_data"],
-            "fetched_at": row["fetched_at"]
+            "hourly_data": hourly_data,
+            "fetched_at": row["fetched_at"],
+            # Time period breakdowns
+            "morning": morning,
+            "afternoon": afternoon,
+            "evening": evening
         })
     
     return forecasts

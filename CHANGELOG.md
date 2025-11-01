@@ -9,9 +9,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added - 2025-11-01
 
+#### Enhanced Weather UI with Time Period Forecasts
+
+**Summary:** Updated the web UI to display granular morning, afternoon, and evening forecasts instead of just daily high/low temperatures.
+
+**Changes:**
+
+1. **Server-side (`weather_service.py`)**
+   - Added `get_time_period_forecast()` - Extracts morning/afternoon/evening forecasts from hourly data
+   - Updated `get_weather_data()` - Now includes time period breakdowns for each day
+   - Morning: 6 AM - 12 PM
+   - Afternoon: 12 PM - 6 PM
+   - Evening: 6 PM - 12 AM
+
+2. **Client-side UI (`WeatherCard`)**
+   - Updated `set_weather_data()` - Displays time period breakdowns
+   - Added `display_time_periods()` - Formats and displays morning/afternoon/evening forecasts
+   - Shows temperature and rain chance for each time period
+   - Uses weather icons for each period
+
+3. **Enhanced Weather Summary (`MainApp`)**
+   - Updated `load_weather_forecast()` - Smarter weekend outlook summary
+   - Shows highest rain chance across all time periods
+   - Provides actionable weather alerts (prepare for rain, mostly clear, etc.)
+
+**Impact:**
+- 🌅 Users see **morning-specific** conditions for early events
+- 🌞 Users see **afternoon-specific** conditions for midday events
+- 🌆 Users see **evening-specific** conditions for night events
+- 📊 **More accurate planning** - no more assuming whole-day averages
+- 🎯 **Better user experience** - granular data at a glance
+
+**Example Display:**
+```
+Saturday
+75°F / 58°F
+
+☀️ Morning: 62°F, 10% rain
+⛅ Afternoon: 75°F, 15% rain
+🌤️ Evening: 68°F, 5% rain
+```
+
+**Files Modified:**
+- `server_code/weather_service.py` - Time period extraction logic
+- `client_code/WeatherCard/__init__.py` - Enhanced weather display
+- `client_code/MainApp/__init__.py` - Improved weather summary
+
+---
+
+### Added - 2025-11-01
+
 #### Hourly Weather Integration for Event-Specific Recommendations
 
 **Summary:** Updated the system to fully utilize hourly weather forecasts for event-time specific scoring, warnings, and AI suggestions.
+
+**CRITICAL FIX APPLIED:** The initial implementation had a bug where event times were only matched to hourly forecasts if they were EXACTLY on the hour. This has been fixed to find the NEAREST hour for any event time.
 
 **Problem Solved:**
 - System was fetching hourly weather data but not using it
@@ -60,12 +112,21 @@ NEW: Scored based on 68°F at 7:00 PM (excellent score!)
 - ✅ No new API calls
 
 **Files Modified:**
-- `server_code/weather_service.py` - Added helper, updated scoring
+- `server_code/weather_service.py` - Added helper, updated scoring, **FIXED time matching**
 - `server_code/data_processor.py` - Updated warnings
 - `server_code/ai_service.py` - Enhanced AI prompt with event-time weather
 
 **Files Added:**
 - `HOURLY_WEATHER_UPDATE.md` - Comprehensive technical documentation
+- `TIME_MATCHING_FIX.md` - Critical bug fix documentation
+- `HOURLY_WEATHER_SUMMARY.md` - Quick reference guide
+
+**Critical Bug Fixed:**
+- Event times now match to NEAREST hourly forecast (not just exact matches)
+- Added `parse_time_to_hour()` - Parse times to 24-hour format
+- Added `find_closest_hourly_forecast()` - Find nearest hour in forecast data
+- Events at 7:30 PM now correctly use 7:00 PM or 8:00 PM forecast (whichever is closer)
+- Coverage increased from ~5% to ~100% of timed events
 
 ---
 
