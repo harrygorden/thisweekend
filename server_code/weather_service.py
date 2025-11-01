@@ -206,10 +206,10 @@ def save_weather_to_db(weather_data):
 def parse_time_to_hour(time_str):
     """
     Parse a time string and return the hour (0-23).
-    Handles formats like "3:00 PM", "7:30 PM", "11:00 AM", etc.
+    Handles formats like "3:00 PM", "7:30 PM", "11:00 AM", "1 p.m.", "10 a.m.", etc.
     
     Args:
-        time_str: Time string (e.g., "7:30 PM")
+        time_str: Time string (e.g., "7:30 PM", "1 p.m.", "10 a.m.")
         
     Returns:
         int: Hour in 24-hour format (0-23), or None if parsing fails
@@ -218,21 +218,26 @@ def parse_time_to_hour(time_str):
         return None
     
     try:
-        time_upper = time_str.upper().strip()
+        # Remove periods and normalize (convert "p.m." to "PM", "a.m." to "AM")
+        time_normalized = time_str.replace('.', '').upper().strip()
         
-        # Extract hour and minute
-        if ":" in time_upper:
-            time_part = time_upper.split(":")[0]
+        # Extract hour
+        if ":" in time_normalized:
+            time_part = time_normalized.split(":")[0]
             hour = int(time_part)
         else:
             # Handle formats like "3 PM" without colon
-            time_part = time_upper.split()[0]
+            time_part = time_normalized.split()[0]
             hour = int(time_part)
         
         # Convert to 24-hour format
-        if "PM" in time_upper and hour != 12:
+        # Check for both "PM" and "P M" (in case of extra spaces)
+        is_pm = "PM" in time_normalized.replace(' ', '')
+        is_am = "AM" in time_normalized.replace(' ', '')
+        
+        if is_pm and hour != 12:
             hour += 12
-        elif "AM" in time_upper and hour == 12:
+        elif is_am and hour == 12:
             hour = 0
         
         return hour

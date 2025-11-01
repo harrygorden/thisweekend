@@ -8,6 +8,7 @@ import anvil.secrets
 import time
 from datetime import datetime, timedelta
 import json
+import re
 
 def get_api_key(secret_name):
     """
@@ -103,7 +104,7 @@ def parse_time_string(time_str):
     Parse various time string formats.
     
     Args:
-        time_str: Time string in various formats
+        time_str: Time string in various formats (e.g., "1 p.m.", "3:30 PM", "2pm")
         
     Returns:
         Formatted time string (HH:MM AM/PM) or original string if parsing fails
@@ -111,7 +112,10 @@ def parse_time_string(time_str):
     if not time_str:
         return None
     
-    time_str = time_str.strip().lower()
+    time_str = time_str.strip()
+    
+    # Remove periods from a.m./p.m. format (convert "1 p.m." to "1 PM")
+    time_normalized = time_str.replace('.', '').replace(' ', ' ').strip()
     
     # Common time formats to try
     formats = [
@@ -124,10 +128,20 @@ def parse_time_string(time_str):
     
     for fmt in formats:
         try:
-            time_obj = datetime.strptime(time_str.upper(), fmt)
+            time_obj = datetime.strptime(time_normalized.upper(), fmt)
             return time_obj.strftime("%I:%M %p")
         except ValueError:
             continue
+    
+    # If all else fails, try to manually parse common patterns
+    time_clean = time_normalized.upper()
+    match = re.search(r'(\d{1,2})(?::(\d{2}))?\s*(AM|PM)', time_clean)
+    if match:
+        hour = int(match.group(1))
+        minute = int(match.group(2)) if match.group(2) else 0
+        period = match.group(3)
+        # Format as standard time
+        return f"{hour:02d}:{minute:02d} {period}"
     
     # Return original if parsing fails
     return time_str

@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed - 2025-11-01
+
+#### Critical Bug: Time Format Parsing
+
+**Summary:** Fixed critical bug where event times with periods ("1 p.m.", "10 a.m.") were not being matched correctly to hourly forecasts.
+
+**Problem:**
+- Event times scraped as "1 p.m.", "10 a.m." (with periods)
+- Parsing functions only checked for "PM"/"AM" (without periods)
+- Events with periods interpreted as AM when they should be PM
+- Result: All events incorrectly matched to 4 PM forecast
+
+**Example Issue:**
+```
+Log showed:
+  Using 04:00 PM forecast for 1 p.m. event    ❌ Wrong!
+  Using 04:00 PM forecast for 10 a.m. event   ❌ Wrong!
+  
+Should be:
+  Using 01:00 PM forecast for 1 p.m. event    ✅ Correct
+  Using 10:00 AM forecast for 10 a.m. event   ✅ Correct
+```
+
+**Fix:**
+- Updated `parse_time_string()` in `api_helpers.py` to remove periods before parsing
+- Updated `parse_time_to_hour()` in `weather_service.py` to handle periods
+- Added regex fallback for edge cases
+- Now correctly handles: "1 p.m.", "10 a.m.", "1:30 p.m.", "7 PM", etc.
+
+**Impact:**
+- ✅ Events now match to correct hourly forecasts
+- ✅ Morning events get morning weather
+- ✅ Evening events get evening weather
+- ✅ Hourly weather feature now works as designed!
+
+**Files Modified:**
+- `server_code/api_helpers.py` - Enhanced time string parsing
+- `server_code/weather_service.py` - Fixed hour parsing with periods
+
+**Files Added:**
+- `TIME_FORMAT_BUG_FIX.md` - Detailed bug analysis
+
+---
+
 ### Added - 2025-11-01
 
 #### Enhanced Weather UI with Time Period Forecasts
