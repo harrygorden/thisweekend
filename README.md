@@ -10,12 +10,12 @@ An intelligent Anvil web application that helps you plan your weekend by combini
 
 - **🌤️ Weather Integration:** Live weather forecasts for Friday, Saturday, and Sunday using OpenWeather One Call API 3.0
 - **📅 Event Scraping:** Automatic scraping of Memphis weekend events from ilovememphisblog.com
-- **🤖 AI-Powered Analysis:** ChatGPT automatically categorizes events:
+- **🤖 AI-Powered Analysis:** GPT-4.1-mini automatically categorizes events:
   - Indoor vs. Outdoor
   - Adult vs. Family-Friendly
   - Cost level (Free, $, $$, $$$, $$$$)
   - Categories (Arts, Music, Sports, Food & Drink, etc.)
-- **🎯 Smart Recommendations:** Weather-aware suggestions that match outdoor events with good weather
+- **🎯 Smart Recommendations:** GPT-4.1 generates weather-aware suggestions that match outdoor events with good weather
 - **🔍 Advanced Filtering:** Multi-criteria search by cost, category, audience type, day, and more
 - **📋 Itinerary Builder:** Create personalized weekend plans with conflict detection
 - **⏰ Automated Updates:** Scheduled background tasks refresh data weekly
@@ -139,8 +139,8 @@ See [project_plan.md](project_plan.md) for detailed phase breakdown.
 Weekly operation (assuming 50 events/week):
 - **OpenWeather:** ~$0.02/week
 - **Firecrawl:** Varies by plan
-- **OpenAI:** ~$0.05/week (GPT-3.5-turbo) or ~$0.75/week (GPT-4)
-- **Total:** ~$0.07-$0.80/week
+- **OpenAI:** ~$0.30/week (GPT-4.1-mini for analysis + GPT-4.1 for suggestions)
+- **Total:** ~$0.32-$0.50/week
 
 ## 🔑 Required Anvil Secrets
 

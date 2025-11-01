@@ -276,10 +276,10 @@ Tracks background task execution.
 
 ### OpenAI API
 - **Plan:** Pay-as-you-go
-- **Cost:** ~$0.05-0.20 per refresh (depends on event count)
-- **Model:** GPT-3.5-turbo recommended
+- **Cost:** ~$0.20-0.40 per refresh (depends on event count)
+- **Models:** GPT-4.1-mini (analysis) + GPT-4.1 (user-facing text)
 
-**Total:** ~$0.30 per full refresh, ~$1.20/month with weekly schedule
+**Total:** ~$0.50 per full refresh, ~$2.00/month with weekly schedule
 
 ---
 

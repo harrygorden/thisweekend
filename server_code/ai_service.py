@@ -1,6 +1,15 @@
 """
 AI service module for This Weekend app.
-Handles integration with OpenAI SDK for event analysis.
+Handles integration with OpenAI SDK for event analysis and text generation.
+
+Model Strategy:
+- GPT-4.1-mini: Used for structured data analysis (event categorization)
+  - Fast, cost-effective, excellent for JSON output
+  - Analyzes indoor/outdoor, audience type, categories, cost levels
+  
+- GPT-4.1: Used for user-facing text generation (recommendations)
+  - High quality, natural language output
+  - Generates weather-aware event suggestions for users
 """
 
 import anvil.server
@@ -38,9 +47,9 @@ def analyze_event(event):
     # Initialize OpenAI client
     client = OpenAI(api_key=api_key)
     
-    # Make API call
+    # Make API call using GPT-4.1-mini for data analysis
     response = client.chat.completions.create(
-        model=config.OPENAI_MODEL,
+        model=config.OPENAI_ANALYSIS_MODEL,
         messages=[
             {
                 "role": "system",
@@ -276,9 +285,9 @@ def generate_weather_aware_suggestions(weather_data, events):
     # Initialize OpenAI client
     client = OpenAI(api_key=api_key)
     
-    # Make API call
+    # Make API call using GPT-4.1 for user-facing text generation
     response = client.chat.completions.create(
-        model=config.OPENAI_MODEL,
+        model=config.OPENAI_TEXT_MODEL,
         messages=[
             {
                 "role": "system",

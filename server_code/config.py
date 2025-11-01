@@ -16,7 +16,10 @@ OPENWEATHER_API_VERSION = "3.0"
 OPENWEATHER_BASE_URL = "https://api.openweathermap.org/data/3.0/onecall"
 
 # OpenAI Configuration
-OPENAI_MODEL = "gpt-3.5-turbo"  # Use gpt-4 for better accuracy if needed
+# GPT-4.1-mini for data analysis (fast, cost-effective)
+OPENAI_ANALYSIS_MODEL = "gpt-4.1-mini"
+# GPT-4.1 for user-facing text generation (high quality)
+OPENAI_TEXT_MODEL = "gpt-4.1"
 OPENAI_MAX_TOKENS = 500  # Per event analysis
 OPENAI_TEMPERATURE = 0.3  # Lower temperature for more consistent categorization
 
