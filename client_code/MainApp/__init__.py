@@ -8,6 +8,7 @@ from anvil.tables import app_tables
 # Import our custom components
 from ..WeatherCard import WeatherCard
 from ..EventCard import EventCard
+from ..AdminForm import AdminForm
 
 
 class MainApp(MainAppTemplate):
@@ -495,4 +496,43 @@ class MainApp(MainAppTemplate):
         """Refresh data from server"""
         self.load_initial_data()
         alert("Data refreshed!", title="Success")
+    
+    
+    def admin_link_click(self, **event_args):
+        """Handle admin link click - prompt for password"""
+        # Create a password textbox
+        password_box = TextBox(
+            placeholder="Enter admin password",
+            type="password",
+            spacing_above="small",
+            spacing_below="small"
+        )
+        
+        # Show password prompt
+        result = alert(
+            content=password_box,
+            title="🔒 Admin Access",
+            buttons=[("Login", True), ("Cancel", False)]
+        )
+        
+        # If user clicked Login
+        if result:
+            password = password_box.text
+            
+            if not password:
+                alert("Please enter a password", title="Error")
+                return
+            
+            # Check password with server
+            try:
+                is_valid = anvil.server.call('check_admin_password', password)
+                
+                if is_valid:
+                    # Password correct - open AdminForm
+                    open_form(AdminForm())
+                else:
+                    alert("Incorrect password", title="Access Denied")
+            
+            except Exception as e:
+                alert(f"Error checking password: {str(e)}", title="Error")
 
