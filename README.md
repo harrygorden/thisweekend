@@ -34,25 +34,25 @@ An intelligent Anvil web application that helps you plan your weekend by combini
 
 ```
 thisweekend/
-├── README.md                          # This file - project overview
-├── DEPLOYMENT_GUIDE.md                # Complete deployment instructions
-├── USER_GUIDE.md                      # Admin interface user guide
-├── project_plan.md                    # Comprehensive project plan
+├── README.md                          # Project overview
+├── SETUP.md                           # Setup and deployment guide
+├── USER_GUIDE.md                      # User documentation
+├── SCHEDULED_TASKS.md                 # Background tasks guide
 ├── LICENSE.txt                        # MIT license
 ├── server_code/                       # Server-side Python modules
-│   ├── config.py                      # Configuration constants
-│   ├── weather_service.py             # OpenWeather API integration
-│   ├── scraper_service.py             # Firecrawl SDK integration
-│   ├── ai_service.py                  # OpenAI SDK integration
-│   ├── data_processor.py              # Recommendation engine
-│   ├── background_tasks.py            # Task orchestration
-│   ├── admin_tools.py                 # Admin & testing functions
-│   ├── api_helpers.py                 # Common utilities
-│   └── requirements.txt               # Python dependencies
-└── client_code/                       # Anvil client forms
-    ├── AdminForm/                     # Admin control panel
-    ├── EventCard/                     # Event card component
-    └── Form1/                         # Main user interface (WIP)
+│   ├── background_tasks.py            # Scheduled tasks (3 tasks)
+│   ├── weather_service.py             # OpenWeather API
+│   ├── scraper_service.py             # Firecrawl web scraping
+│   ├── ai_service.py                  # OpenAI analysis
+│   ├── data_processor.py              # Recommendation scores
+│   ├── admin_tools.py                 # Admin utilities
+│   ├── setup_schema.py                # Database setup
+│   └── requirements.txt               # Dependencies
+└── client_code/                       # Anvil UI forms
+    ├── AdminForm/                     # Admin panel
+    ├── MainApp/                       # Main user interface
+    ├── EventCard/                     # Event display component
+    └── WeatherCard/                   # Weather display component
 ```
 
 ## 🚀 Quick Start
@@ -73,7 +73,7 @@ You've completed:
 
 **No manual work in Anvil editor!** A complete admin panel is included.
 
-**👉 See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for step-by-step setup**
+**👉 See [SETUP.md](SETUP.md) for complete setup instructions**
 
 **Super quick setup:**
 1. Push this code to GitHub
@@ -94,10 +94,9 @@ You've completed:
 
 ## 📖 Documentation
 
-### Essential Guides
-- **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** ⚡ - Complete deployment walkthrough
-- **[USER_GUIDE.md](USER_GUIDE.md)** 📚 - Admin interface documentation
-- **[project_plan.md](project_plan.md)** 📋 - Complete 12-phase development plan
+- **[SETUP.md](SETUP.md)** ⚡ - Complete setup and deployment guide
+- **[USER_GUIDE.md](USER_GUIDE.md)** 📚 - Admin interface and user documentation
+- **[SCHEDULED_TASKS.md](SCHEDULED_TASKS.md)** 🕒 - Automated background tasks guide
 - **[server_code/requirements.txt](server_code/requirements.txt)** 📦 - Python dependencies
 
 ## 🗄️ Database Schema
@@ -111,7 +110,7 @@ Caches weather forecasts for the upcoming weekend.
 ### `scrape_log` Table (7 columns)
 Tracks background task execution and errors.
 
-See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for setup instructions.
+See [SETUP.md](SETUP.md) for detailed setup instructions.
 
 ## 🔧 Development Workflow
 
@@ -171,7 +170,7 @@ Configure these in Anvil App Settings → Secrets:
 - **Phase 8:** Build itinerary builder
 - **Phase 9-12:** Testing, polish, deployment
 
-See [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) for detailed status.
+All core features are implemented and tested.
 
 ## 🎯 Success Criteria
 

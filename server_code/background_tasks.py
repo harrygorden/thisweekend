@@ -157,6 +157,98 @@ def scheduled_refresh_all_data():
         raise
 
 
+@anvil.server.background_task
+def scheduled_refresh_weather_and_scores():
+    """
+    BACKGROUND TASK: Refresh weather data and recalculate recommendation scores.
+    This is a lightweight daily update that doesn't scrape events or use AI.
+    
+    Perfect for keeping weather-dependent recommendations current without
+    the cost of full data refresh.
+    
+    Steps:
+    1. Delete old weather data
+    2. Fetch fresh weather forecast
+    3. Save weather to database
+    4. Match events with updated weather
+    5. Recalculate recommendation scores
+    
+    Duration: 10-30 seconds
+    API Costs: Only OpenWeather (free tier)
+    
+    Returns:
+        dict: Status and update counts
+    """
+    start_time = datetime.now()
+    
+    print("\n" + "=" * 60)
+    print("🌤️ SCHEDULED WEATHER & SCORES REFRESH - STARTING")
+    print(f"Started at {start_time}")
+    print("=" * 60 + "\n")
+    
+    try:
+        # Step 1: Clear old weather data
+        print("[1/5] Clearing old weather data...")
+        weather_count = 0
+        for row in app_tables.weather_forecast.search():
+            row.delete()
+            weather_count += 1
+        print(f"  ✓ Deleted {weather_count} old weather forecasts")
+        
+        # Step 2: Fetch fresh weather forecast
+        print("[2/5] Fetching fresh weather forecast...")
+        weather_data = weather_service.fetch_weekend_weather()
+        print(f"  ✓ Retrieved {len(weather_data)} days of weather")
+        
+        # Step 3: Save weather to database
+        print("[3/5] Saving weather to database...")
+        weather_service.save_weather_to_db(weather_data)
+        print(f"  ✓ Saved {len(weather_data)} weather forecasts")
+        
+        # Step 4: Match events with updated weather
+        print("[4/5] Matching events with weather...")
+        matched_count = data_processor.match_events_with_weather()
+        print(f"  ✓ Matched {matched_count} events with weather")
+        
+        # Step 5: Recalculate recommendation scores
+        print("[5/5] Recalculating recommendation scores...")
+        updated_count = data_processor.update_all_recommendation_scores()
+        print(f"  ✓ Updated {updated_count} recommendation scores")
+        
+        # Calculate duration
+        end_time = datetime.now()
+        duration = (end_time - start_time).total_seconds()
+        
+        print("\n" + "=" * 60)
+        print("✅ WEATHER & SCORES REFRESH - COMPLETED")
+        print(f"Duration: {duration:.1f} seconds")
+        print(f"Weather forecasts: {len(weather_data)}")
+        print(f"Events updated: {updated_count}")
+        print("=" * 60 + "\n")
+        
+        return {
+            "status": "success",
+            "weather_forecasts": len(weather_data),
+            "events_matched": matched_count,
+            "scores_updated": updated_count,
+            "duration_seconds": duration
+        }
+        
+    except Exception as e:
+        error_message = str(e)
+        print(f"\n❌ ERROR during weather refresh: {error_message}")
+        
+        end_time = datetime.now()
+        duration = (end_time - start_time).total_seconds()
+        
+        print("=" * 60)
+        print(f"Weather refresh failed after {duration:.1f} seconds")
+        print("=" * 60 + "\n")
+        
+        # Re-raise exception so Anvil logs it
+        raise
+
+
 @anvil.server.callable
 def trigger_data_refresh():
     """
@@ -169,6 +261,25 @@ def trigger_data_refresh():
     print("Manual data refresh triggered by client")
     print("Launching background task: scheduled_refresh_all_data")
     task = anvil.server.launch_background_task('scheduled_refresh_all_data')
+    print(f"Background task launched: {task}")
+    return task
+
+
+@anvil.server.callable
+def trigger_weather_refresh():
+    """
+    Manually trigger a weather and scores refresh.
+    Callable from client-side code for testing/admin purposes.
+    
+    This is faster and cheaper than full refresh - only updates weather
+    and recalculates scores without scraping or AI analysis.
+    
+    Returns:
+        Task object for monitoring progress
+    """
+    print("Manual weather refresh triggered by client")
+    print("Launching background task: scheduled_refresh_weather_and_scores")
+    task = anvil.server.launch_background_task('scheduled_refresh_weather_and_scores')
     print(f"Background task launched: {task}")
     return task
 

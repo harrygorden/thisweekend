@@ -159,16 +159,23 @@ def get_system_info():
     return info
 
 
-@anvil.server.callable  
-def clear_all_data():
+@anvil.server.background_task
+def scheduled_clear_all_data():
     """
-    DANGER: Clear all data from all tables.
-    Use this to reset the database for testing.
+    BACKGROUND TASK: Clear all data from all tables.
+    This can be scheduled to run via Anvil Scheduled Tasks.
+    
+    Use this to reset the database for testing or regular cleanup.
     
     Returns:
         dict: Count of rows deleted from each table
     """
     from anvil.tables import app_tables
+    
+    print("\n" + "=" * 60)
+    print("🗑️ SCHEDULED CLEAR ALL DATA - STARTING")
+    print(f"Started at {datetime.now()}")
+    print("=" * 60 + "\n")
     
     result = {
         'timestamp': datetime.now(),
@@ -177,35 +184,73 @@ def clear_all_data():
     
     # Clear events
     try:
+        print("[1/3] Clearing events table...")
         count = 0
         for row in app_tables.events.search():
             row.delete()
             count += 1
         result['deleted']['events'] = count
+        print(f"  ✓ Deleted {count} events")
     except Exception as e:
         result['deleted']['events'] = f"Error: {str(e)}"
+        print(f"  ✗ Error: {str(e)}")
     
     # Clear weather_forecast
     try:
+        print("[2/3] Clearing weather_forecast table...")
         count = 0
         for row in app_tables.weather_forecast.search():
             row.delete()
             count += 1
         result['deleted']['weather_forecast'] = count
+        print(f"  ✓ Deleted {count} weather forecasts")
     except Exception as e:
         result['deleted']['weather_forecast'] = f"Error: {str(e)}"
+        print(f"  ✗ Error: {str(e)}")
     
     # Clear scrape_log
     try:
+        print("[3/3] Clearing scrape_log table...")
         count = 0
         for row in app_tables.scrape_log.search():
             row.delete()
             count += 1
         result['deleted']['scrape_log'] = count
+        print(f"  ✓ Deleted {count} log entries")
     except Exception as e:
         result['deleted']['scrape_log'] = f"Error: {str(e)}"
+        print(f"  ✗ Error: {str(e)}")
+    
+    total_deleted = sum(v for v in result['deleted'].values() if isinstance(v, int))
+    
+    print("\n" + "=" * 60)
+    print(f"✅ SCHEDULED CLEAR ALL DATA - COMPLETED")
+    print(f"Total rows deleted: {total_deleted}")
+    print("=" * 60 + "\n")
     
     return result
+
+
+@anvil.server.callable  
+def clear_all_data():
+    """
+    CALLABLE WRAPPER: Clear all data from all tables.
+    This is a wrapper that launches the background task for use from the admin panel.
+    
+    For scheduled execution, use scheduled_clear_all_data instead.
+    
+    Returns:
+        dict: Count of rows deleted from each table
+    """
+    # Launch the background task and wait for it to complete
+    task = anvil.server.launch_background_task('scheduled_clear_all_data')
+    
+    # Wait for completion and return result
+    while not task.is_completed():
+        import time
+        time.sleep(0.5)
+    
+    return task.get_return_value()
 
 
 @anvil.server.callable
