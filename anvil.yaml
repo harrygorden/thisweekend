@@ -162,7 +162,169 @@ runtime_options:
   server_spec: {base: python310-standard}
   server_version: python3-sandbox
   version: 2
-scheduled_tasks: []
+scheduled_tasks:
+- job_id: KYZWWFBN
+  task_name: scheduled_clear_all_data
+  time_spec:
+    at: {day: 2, hour: 6, minute: 0}
+    every: week
+    n: 1
+- job_id: QXDQSXHC
+  task_name: scheduled_refresh_all_data
+  time_spec:
+    at: {day: 4, hour: 6, minute: 0}
+    every: week
+    n: 1
+- job_id: HQRRHAPF
+  task_name: scheduled_refresh_weather_and_scores
+  time_spec:
+    at: {day: 4, hour: 12, minute: 0}
+    every: week
+    n: 1
+- job_id: JSZJZAZK
+  task_name: scheduled_refresh_weather_and_scores
+  time_spec:
+    at: {day: 4, hour: 18, minute: 0}
+    every: week
+    n: 1
+- job_id: UMWXUWFX
+  task_name: scheduled_refresh_weather_and_scores
+  time_spec:
+    at: {day: 5, hour: 0, minute: 0}
+    every: week
+    n: 1
+- job_id: MXZAJBDU
+  task_name: scheduled_refresh_weather_and_scores
+  time_spec:
+    at: {day: 5, hour: 6, minute: 0}
+    every: week
+    n: 1
+- job_id: NZJOWWRD
+  task_name: scheduled_refresh_weather_and_scores
+  time_spec:
+    at: {day: 5, hour: 12, minute: 0}
+    every: week
+    n: 1
+- job_id: OYDTNHAI
+  task_name: scheduled_refresh_weather_and_scores
+  time_spec:
+    at: {day: 5, hour: 13, minute: 0}
+    every: week
+    n: 1
+- job_id: CCBJTHQC
+  task_name: scheduled_refresh_weather_and_scores
+  time_spec:
+    at: {day: 5, hour: 14, minute: 0}
+    every: week
+    n: 1
+- job_id: ZXUONUBF
+  task_name: scheduled_refresh_weather_and_scores
+  time_spec:
+    at: {day: 5, hour: 15, minute: 0}
+    every: week
+    n: 1
+- job_id: LEMSQXMU
+  task_name: scheduled_refresh_weather_and_scores
+  time_spec:
+    at: {day: 5, hour: 16, minute: 0}
+    every: week
+    n: 1
+- job_id: DSFMMUNV
+  task_name: scheduled_refresh_weather_and_scores
+  time_spec:
+    at: {day: 5, hour: 17, minute: 0}
+    every: week
+    n: 1
+- job_id: YSOKWFAZ
+  task_name: scheduled_refresh_weather_and_scores
+  time_spec:
+    at: {day: 5, hour: 18, minute: 0}
+    every: week
+    n: 1
+- job_id: IPYVBXPB
+  task_name: scheduled_refresh_weather_and_scores
+  time_spec:
+    at: {day: 5, hour: 19, minute: 0}
+    every: week
+    n: 1
+- job_id: GRZSKPTC
+  task_name: scheduled_refresh_weather_and_scores
+  time_spec:
+    at: {day: 5, hour: 20, minute: 0}
+    every: week
+    n: 1
+- job_id: MBTZZSHT
+  task_name: scheduled_refresh_weather_and_scores
+  time_spec:
+    at: {day: 5, hour: 21, minute: 0}
+    every: week
+    n: 1
+- job_id: NFBSZUIO
+  task_name: scheduled_refresh_weather_and_scores
+  time_spec:
+    at: {day: 5, hour: 22, minute: 0}
+    every: week
+    n: 1
+- job_id: EWOYNKQB
+  task_name: scheduled_refresh_weather_and_scores
+  time_spec:
+    at: {day: 5, hour: 23, minute: 0}
+    every: week
+    n: 1
+- job_id: ORLAWFNB
+  task_name: scheduled_refresh_weather_and_scores
+  time_spec:
+    at: {day: 6, hour: 0, minute: 0}
+    every: week
+    n: 1
+- job_id: HHXGNSCM
+  task_name: scheduled_refresh_weather_and_scores
+  time_spec:
+    at: {day: 6, hour: 1, minute: 0}
+    every: week
+    n: 1
+- job_id: KKXDSHFF
+  task_name: scheduled_refresh_weather_and_scores
+  time_spec:
+    at: {day: 6, hour: 2, minute: 0}
+    every: week
+    n: 1
+- job_id: ARLGHMTZ
+  task_name: scheduled_refresh_weather_and_scores
+  time_spec:
+    at: {day: 6, hour: 3, minute: 0}
+    every: week
+    n: 1
+- job_id: ZZRLIYMT
+  task_name: scheduled_refresh_weather_and_scores
+  time_spec:
+    at: {day: 6, hour: 4, minute: 0}
+    every: week
+    n: 1
+- job_id: ZLYRTJXE
+  task_name: scheduled_refresh_weather_and_scores
+  time_spec:
+    at: {day: 6, hour: 5, minute: 0}
+    every: week
+    n: 1
+- job_id: SWJKDBSY
+  task_name: scheduled_refresh_weather_and_scores
+  time_spec:
+    at: {day: 6, hour: 6, minute: 0}
+    every: week
+    n: 1
+- job_id: FNVOJIHP
+  task_name: scheduled_refresh_weather_and_scores
+  time_spec:
+    at: {day: 6, hour: 7, minute: 0}
+    every: week
+    n: 1
+- job_id: WEXCTBIV
+  task_name: scheduled_refresh_weather_and_scores
+  time_spec:
+    at: {day: 6, hour: 8, minute: 0}
+    every: week
+    n: 1
 secrets:
   ADMIN_PASSWORD:
     type: secret
