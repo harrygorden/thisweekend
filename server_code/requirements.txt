@@ -5,6 +5,7 @@
 # Required third-party packages:
 firecrawl-py>=1.0.0        # Firecrawl Python SDK (more reliable than raw HTTP)
 openai>=1.0.0              # OpenAI Python SDK
+pytz                       # Timezone support for Central Time date filtering
 
 # For local testing with Anvil Uplink:
 anvil-uplink

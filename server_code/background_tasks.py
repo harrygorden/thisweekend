@@ -16,6 +16,7 @@ from . import scraper_service
 from . import ai_service
 from . import data_processor
 from . import api_helpers
+from . import date_utils
 
 
 @anvil.server.background_task
@@ -78,8 +79,13 @@ def scheduled_refresh_all_data():
         # Step 5: Parse events from markdown
         print("[5/10] Parse events...")
         events = scraper_service.parse_events_from_markdown(markdown_content)
-        log_entry["events_found"] = len(events)
         print(f"  ✓ Found {len(events)} events")
+        
+        # Step 5.5: Filter out past events
+        print("[5.5/10] Filter past events...")
+        events = date_utils.filter_future_events(events)
+        log_entry["events_found"] = len(events)
+        print(f"  ✓ {len(events)} future events to process")
         
         # Step 6: Save events to database
         print("[6/10] Save to DB...")
@@ -88,6 +94,9 @@ def scheduled_refresh_all_data():
         # Step 7: Analyze events with AI
         print("[7/10] AI analysis...")
         db_events = list(app_tables.events.search())
+        # Filter to only future events for AI analysis
+        db_events = date_utils.filter_future_events(db_events)
+        print(f"  Analyzing {len(db_events)} future events...")
         analyses = ai_service.analyze_all_events(db_events)
         
         # Step 8: Update events with AI analysis
@@ -235,7 +244,7 @@ def get_refresh_status():
 def cleanup_old_data():
     """
     Clean up old data from database tables.
-    - Delete events older than configured retention period
+    - Delete events that have already passed (based on event date, not scrape date)
     - Delete old weather forecasts
     - Delete old scrape logs
     """
@@ -244,7 +253,7 @@ def cleanup_old_data():
     try:
         # Calculate retention cutoff dates
         now = datetime.now()
-        event_cutoff = now - timedelta(days=config.DATA_RETENTION["events"])
+        current_central_date = date_utils.get_current_central_date()
         weather_cutoff = now - timedelta(days=config.DATA_RETENTION["weather"])
         log_cutoff = now - timedelta(days=config.DATA_RETENTION["scrape_log"])
         
@@ -271,26 +280,26 @@ def cleanup_old_data():
         if deleted_junk > 0:
             print(f"Deleted {deleted_junk} junk events (Reply links, etc.)")
         
-        # Delete old events
-        old_events = app_tables.events.search()
+        # Delete past events (events that have already occurred)
+        all_events = list(app_tables.events.search())
         deleted_events = 0
-        for event in old_events:
+        for event in all_events:
             try:
-                # Handle both timezone-aware and naive datetimes
-                scraped_at = event["scraped_at"]
-                if scraped_at:
-                    # Remove timezone info for comparison if present
-                    if hasattr(scraped_at, 'replace') and scraped_at.tzinfo is not None:
-                        scraped_at = scraped_at.replace(tzinfo=None)
-                    if scraped_at < event_cutoff:
+                event_date = event["date"]
+                event_time = event["start_time"]
+                
+                if event_date:
+                    # Check if event is in the past
+                    if not date_utils.is_event_in_future(event_date, event_time):
                         event.delete()
                         deleted_events += 1
-            except (TypeError, AttributeError):
-                # Skip if datetime comparison fails
+            except Exception as e:
+                # Skip if there's any error
+                print(f"Error checking event date: {e}")
                 pass
         
         if deleted_events > 0:
-            print(f"Deleted {deleted_events} old events")
+            print(f"Deleted {deleted_events} past events")
         
         # Delete old weather forecasts
         old_weather = app_tables.weather_forecast.search()
