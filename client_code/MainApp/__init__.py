@@ -49,6 +49,10 @@ class MainApp(MainAppTemplate):
     def load_initial_data(self):
         """Load weather and events from server"""
         try:
+            # Hide suggestions section (disabled to prevent API costs)
+            if hasattr(self, 'suggestions_section'):
+                self.suggestions_section.visible = False
+            
             # Load weather
             self.load_weather_forecast()
             
