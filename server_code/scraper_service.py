@@ -189,13 +189,14 @@ def parse_events_from_markdown(markdown_content):
 def scrape_event_details_from_url(event_url, api_key):
     """
     Scrape individual event page for detailed information.
+    Detects if event has passed via redirect.
     
     Args:
         event_url: URL to the specific event page
         api_key: Firecrawl API key
         
     Returns:
-        dict: Detailed event information or None if scraping fails
+        dict: Detailed event information or None if scraping fails or event has passed
     """
     try:
         firecrawl = Firecrawl(api_key=api_key)
@@ -203,7 +204,21 @@ def scrape_event_details_from_url(event_url, api_key):
             url=event_url,
             formats=['markdown']
         )
+        
+        # Check if the event has passed (redirects to event-has-passed page)
+        if hasattr(result, 'metadata') and result.metadata:
+            # Check the final URL after any redirects
+            final_url = getattr(result.metadata, 'url', event_url)
+            if 'event-has-passed' in final_url:
+                print(f"  ⏭️  Event has passed (redirected): {event_url}")
+                return {'event_has_passed': True}
+        
         if hasattr(result, 'markdown'):
+            # Also check markdown content for "event has passed" message
+            if 'event has passed' in result.markdown.lower():
+                print(f"  ⏭️  Event has passed (content check): {event_url}")
+                return {'event_has_passed': True}
+            
             return extract_details_from_event_page(result.markdown)
     except Exception:
         # Silently fail - we'll use the data from the weekend page
@@ -319,13 +334,31 @@ def extract_details_from_event_page(markdown):
         
         # Collect description lines
         if in_description_section:
+            # Skip markdown bold headers
             if line.startswith('**'):
                 continue
+            # Skip lines with lots of links
             if line.count('[') > 2:
                 continue
-            if len(line) > 30 and not line.startswith('!'):
-                clean_line = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', line)
-                description_lines.append(clean_line)
+            # Skip markdown tables (calendar, navigation, etc.)
+            if '|' in line:
+                continue
+            # Skip lines that look like calendar day names
+            if re.search(r'\b(su|mo|tu|we|th|fr|sa)\b', line, re.IGNORECASE) and len(line) < 50:
+                continue
+            # Skip lines with only numbers and separators (table data)
+            if re.match(r'^[\d\s\|\-]+$', line):
+                continue
+            # Skip very short lines (likely headers or navigation)
+            if len(line) < 30:
+                continue
+            # Skip image markdown
+            if line.startswith('!'):
+                continue
+            
+            # Clean and add valid description lines
+            clean_line = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', line)
+            description_lines.append(clean_line)
     
     # Build description
     if description_lines:
@@ -406,6 +439,10 @@ def parse_event_link_text(link_text, link_url, current_day, weekend_dates):
     try:
         api_key = api_helpers.get_api_key("FIRECRAWL_API_KEY")
         detailed_info = scrape_event_details_from_url(link_url, api_key)
+        
+        # Check if event has passed
+        if detailed_info and detailed_info.get('event_has_passed'):
+            return None  # Skip this event entirely
         
         if detailed_info:
             # Override with better data from event page
