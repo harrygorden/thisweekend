@@ -52,12 +52,11 @@ class MainApp(MainAppTemplate):
     def load_initial_data(self):
         """Load weather and events from server"""
         try:
-            # Hide suggestions section (disabled to prevent API costs)
-            if hasattr(self, 'suggestions_section'):
-                self.suggestions_section.visible = False
-            
             # Load weather
             self.load_weather_forecast()
+            
+            # Load weekend suggestions (AI-generated)
+            self.load_weekend_suggestions()
             
             # Load events
             self.load_events()
@@ -107,11 +106,30 @@ class MainApp(MainAppTemplate):
     
     
     def load_weekend_suggestions(self):
-        """Load AI-generated weekend suggestions - DISABLED to prevent API costs"""
-        # Weekend suggestions removed to prevent users from triggering ChatGPT API calls
-        # Suggestions are now implicit based on recommendation scores
-        if hasattr(self, 'suggestions_section'):
-            self.suggestions_section.visible = False
+        """Load AI-generated weekend suggestions"""
+        try:
+            # Set loading state
+            if hasattr(self, 'suggestions_text'):
+                self.suggestions_text.text = "Generating personalized suggestions..."
+                self.suggestions_text.italic = True
+            
+            # Get suggestions from server
+            suggestions = anvil.server.call('get_weekend_suggestions')
+            
+            if suggestions:
+                self.suggestions_text.text = suggestions
+                self.suggestions_text.italic = False
+            else:
+                # Hide the section if no suggestions
+                if hasattr(self, 'suggestions_section'):
+                    self.suggestions_section.visible = False
+                
+        except Exception as e:
+            print(f"Error loading suggestions: {e}")
+            # Show a friendly fallback message
+            if hasattr(self, 'suggestions_text'):
+                self.suggestions_text.text = "Explore the events below to find your perfect weekend activities!"
+                self.suggestions_text.italic = False
     
     
     def load_events(self):

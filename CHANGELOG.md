@@ -128,28 +128,28 @@ Saturday, November 2 • 7:30 PM
 
 ### Changed - 2025-11-01
 
-#### User-Facing Features Disabled for Cost Control
+#### Cost Control: Manual Refresh Disabled
 
-**Summary:** Disabled features that could trigger expensive API calls by regular users.
+**Summary:** Disabled manual data refresh to prevent users from triggering expensive API calls, while keeping AI suggestions on page load.
 
 **Changes:**
-- Removed AI-generated weekend suggestions (GPT-4.1 calls)
-- Modified refresh button to prevent manual data refreshes
-- Hidden "Weekend Outlook: Loading..." redundant text
+- Modified refresh button to show info message instead of refreshing
+- Removed "Weekend Outlook: Loading..." redundant text
+- Kept AI-generated weekend suggestions (load once on page load only)
 - Data still auto-refreshes via scheduled background tasks
 
 **Rationale:**
-- Each suggestion generation costs ~$0.10-0.15 (GPT-4.1)
-- Manual refresh triggers full data pipeline including AI analysis
+- Manual refresh triggers full data pipeline (~$0.50 per refresh)
+- Page load suggestions are acceptable (once per session)
 - Users don't need to manually refresh - auto-updates handle it
-- Event cards now have weather built-in, suggestions less critical
+- Prevents repeated/accidental expensive operations
 
 **User Experience:**
-- ✅ Still see all event and weather data
+- ✅ See AI weekend suggestions on page load
 - ✅ Event cards show event-time weather
 - ✅ Recommendation scores guide choices
-- ✅ Can't accidentally trigger API costs
-- ℹ️ Refresh button shows info message instead
+- ✅ Can't trigger manual refresh (controlled costs)
+- ℹ️ Refresh button shows auto-refresh info message
 
 ---
 
