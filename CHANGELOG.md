@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed - 2025-11-01
+
+#### Weather Display Layout Improvements
+
+**Summary:** Centered weather cards and improved spacing for better visual balance.
+
+**Changes:**
+- Updated `weather_container` alignment from left to center
+- Increased spacing from medium to large for better card separation
+- Set WeatherCard width to 250px for consistent sizing
+- Weather cards now spread across the page width
+
+**Impact:**
+- ✅ Better visual balance across page width
+- ✅ Weather cards centered and evenly spaced
+- ✅ More professional appearance
+- ✅ Better use of available space
+
+**Files Modified:**
+- `client_code/MainApp/form_template.yaml` - Container alignment and spacing
+- `client_code/WeatherCard/form_template.yaml` - Card width
+
+---
+
 ### Added - 2025-11-01
 
 #### Sort Order Dropdown
