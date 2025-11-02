@@ -18,12 +18,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced error handling to gracefully fall back to primary site data when event detail pages can't be scraped
 - Added detection for login-required pages, access-denied pages, and insufficient content
 - Expanded skip patterns to filter out navigation links, social media, and other non-event URLs
+- **Added strict validation:** Events MUST have both a valid time AND valid location to appear in the app
+- Events with "TBD" for either time or location are filtered out
 - Updated documentation to reflect the new behavior
 
 **Impact:**
-- Users will now see significantly more events in the app
-- Events with inaccessible detail pages will still appear with basic information from the primary site
-- Better resilience against scraping failures
+- Users will only see events with complete, actionable information (time + location)
+- False positives (navigation links, UI elements) are automatically filtered out
+- Higher quality event data with no incomplete events shown
+- Better user experience with reliable event information
 
 ---
 

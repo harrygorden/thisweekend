@@ -502,6 +502,11 @@ def parse_event_link_text(link_text, link_url, current_day, weekend_dates):
         # If scraping individual page fails, use link text data
         pass
     
+    # Require BOTH time AND location to be valid for event to show in app
+    # If we can't provide users with both pieces of information, don't show the event
+    if event["start_time"] == "TBD" or event["location"] == "TBD":
+        return None
+    
     return event
 
 
